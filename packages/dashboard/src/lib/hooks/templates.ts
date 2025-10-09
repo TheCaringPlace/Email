@@ -1,13 +1,14 @@
-import useSWR from 'swr';
-import {Action, Template} from '@prisma/client';
-import {useActiveProject} from './projects';
+import type { Action, Template } from "@plunk/shared";
+import useSWR from "swr";
+import { useActiveProject } from "./projects";
 
 /**
  *
  * @param id
  */
 export function useTemplate(id: string) {
-  return useSWR(`/v1/templates/${id}`);
+  const activeProject = useActiveProject();
+  return useSWR(activeProject ? `/projects/${activeProject.id}/templates/${id}` : null);
 }
 
 /**
@@ -20,5 +21,5 @@ export function useTemplates() {
     (Template & {
       actions: Action[];
     })[]
-  >(activeProject ? `/projects/id/${activeProject.id}/templates` : null);
+  >(activeProject ? `/projects/${activeProject.id}/templates/all?embed=actions` : null);
 }

@@ -1,13 +1,14 @@
-import useSWR from 'swr';
-import {Action, Email, Event, Task, Template, Trigger} from '@prisma/client';
-import {useActiveProject} from './projects';
+import type { Action, Email, Event, Template, Trigger } from "@plunk/shared";
+import useSWR from "swr";
+import { useActiveProject } from "./projects";
 
 /**
  *
  * @param id
  */
 export function useAction(id: string) {
-  return useSWR(`/v1/actions/${id}`);
+  const activeProject = useActiveProject();
+  return useSWR<Action>(activeProject ? `/projects/${activeProject.id}/actions/${id}` : null);
 }
 
 /**
@@ -15,6 +16,7 @@ export function useAction(id: string) {
  * @param id
  */
 export function useRelatedActions(id: string) {
+  const activeProject = useActiveProject();
   return useSWR<
     (Action & {
       events: Event[];
@@ -23,7 +25,7 @@ export function useRelatedActions(id: string) {
       emails: Email[];
       template: Template;
     })[]
-  >(`/v1/actions/${id}/related`);
+  >(activeProject ? `/projects/${activeProject.id}/actions/${id}/related` : null);
 }
 
 /**
@@ -35,9 +37,7 @@ export function useActions() {
   return useSWR<
     (Action & {
       triggers: Trigger[];
-      template: Template;
       emails: Email[];
-      tasks: Task[];
     })[]
-  >(activeProject ? `/projects/id/${activeProject.id}/actions` : null);
+  >(activeProject ? `/projects/${activeProject.id}/actions/all?embed=triggers&embed=emails` : null);
 }

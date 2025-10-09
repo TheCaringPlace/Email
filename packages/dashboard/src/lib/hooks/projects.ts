@@ -1,37 +1,37 @@
-import {Action, Contact, Email, Event, Project, Role} from '@prisma/client';
-import {useAtom} from 'jotai';
-import useSWR from 'swr';
-import {atomActiveProject} from '../atoms/project';
+import type { Action, Contact, Email, Event, Membership, ProjectKeys, PublicProject } from "@plunk/shared";
+import { useAtom } from "jotai";
+import useSWR from "swr";
+import { atomActiveProject } from "../atoms/project";
 
 /**
  *
  */
 export function useProjects() {
-  return useSWR<Project[]>('/users/@me/projects');
+  return useSWR<PublicProject[]>("/projects");
 }
 
 /**
  *
  */
-export function useActiveProject(): Project | null {
+export function useActiveProject(): PublicProject | null {
   const [activeProject, setActiveProject] = useAtom(atomActiveProject);
-  const {data: projects} = useProjects();
+  const { data: projects } = useProjects();
 
   if (!projects) {
     return null;
   }
 
-  if (activeProject && !projects.find(project => project.id === activeProject)) {
+  if (activeProject && !projects.find((project) => project.id === activeProject)) {
     setActiveProject(null);
-    window.localStorage.removeItem('project');
+    window.localStorage.removeItem("project");
   }
 
   if (!activeProject && projects.length > 0) {
     setActiveProject(projects[0].id);
-    window.localStorage.setItem('project', projects[0].id);
+    window.localStorage.setItem("project", projects[0].id);
   }
 
-  return projects.find(project => project.id === activeProject) ?? null;
+  return projects.find((project) => project.id === activeProject) ?? null;
 }
 
 /**
@@ -40,13 +40,7 @@ export function useActiveProject(): Project | null {
 export function useActiveProjectMemberships() {
   const activeProject = useActiveProject();
 
-  return useSWR<
-    {
-      userId: string;
-      email: string;
-      role: Role;
-    }[]
-  >(activeProject ? `/projects/id/${activeProject.id}/memberships` : null);
+  return useSWR<{ members: Membership[] }>(activeProject ? `/projects/${activeProject.id}/members` : null);
 }
 
 /**
@@ -59,15 +53,16 @@ export function useActiveProjectFeed(page: number) {
     (
       | {
           createdAt: Date;
-          contact: Contact;
-          event: Event | null;
-          action: Action | null;
+          contact?: Contact;
+          event?: Event;
+          action?: Action;
         }
       | ({
-          contact: Contact;
-        } & Email)
+          createdAt: Date;
+          contact?: Contact;
+        } & Pick<Email, "messageId" | "status">)
     )[]
-  >(activeProject ? `/projects/id/${activeProject.id}/feed?page=${page}` : null);
+  >(activeProject ? `/projects/${activeProject.id}/feed?page=${page}` : null);
 }
 
 /**
@@ -77,6 +72,13 @@ export function useActiveProjectVerifiedIdentity() {
   const activeProject = useActiveProject();
 
   return useSWR<{
+    verified: boolean;
     tokens: string[];
-  }>(activeProject ? `/identities/id/${activeProject.id}` : null);
+  }>(activeProject ? `/projects/${activeProject.id}/identity` : null);
+}
+
+export function useActiveProjectKeys() {
+  const activeProject = useActiveProject();
+
+  return useSWR<ProjectKeys>(activeProject ? `/projects/${activeProject.id}/keys` : null);
 }

@@ -1,11 +1,10 @@
-import {FieldError, UseFormRegisterReturn} from 'react-hook-form';
-import {AnimatePresence, motion} from 'framer-motion';
-import React from 'react';
+import { AnimatePresence, motion } from "framer-motion";
+import type { FieldError, UseFormRegisterReturn } from "react-hook-form";
 
 export interface InputProps {
   label?: string;
   placeholder?: string;
-  type?: 'text' | 'email' | 'password' | 'number';
+  type?: "text" | "email" | "password" | "number";
   register: UseFormRegisterReturn;
   error?: FieldError;
   className?: string;
@@ -26,28 +25,23 @@ export interface InputProps {
 export default function Input(props: InputProps) {
   return (
     <div className={props.className}>
-      <label className="block text-sm font-medium text-neutral-700">{props.label}</label>
+      <label htmlFor={props.register.name} className="block text-sm font-medium text-neutral-700">
+        {props.label}
+      </label>
       <div className="mt-1">
         <input
-          autoComplete={'off'}
+          autoComplete={"off"}
           type={props.type}
-          min={props.type === 'number' ? props.min : undefined}
-          max={props.type === 'number' ? props.max : undefined}
-          className={
-            'block w-full rounded border-neutral-300 transition ease-in-out focus:border-neutral-800 focus:ring-neutral-800 sm:text-sm'
-          }
+          min={props.type === "number" ? props.min : undefined}
+          max={props.type === "number" ? props.max : undefined}
+          className={"block w-full rounded border-neutral-300 transition ease-in-out focus:border-neutral-800 focus:ring-neutral-800 sm:text-sm"}
           placeholder={props.placeholder}
           {...props.register}
         />
       </div>
       <AnimatePresence>
         {props.error && (
-          <motion.p
-            initial={{height: 0}}
-            animate={{height: 'auto'}}
-            exit={{height: 0}}
-            className="mt-1 text-xs text-red-500"
-          >
+          <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">
             {props.error.message}
           </motion.p>
         )}

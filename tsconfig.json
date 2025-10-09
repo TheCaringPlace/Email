@@ -21,8 +21,8 @@
       "@plunk/shared": [
         "./packages/shared/"
       ],
-      "@plunk/shared/*": [
-        "./packages/shared/*"
+      "@plunk/lib": [
+        "./packages/lib/"
       ]
     }
   },

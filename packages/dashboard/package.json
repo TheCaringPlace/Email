@@ -4,12 +4,16 @@
 	"private": true,
 	"scripts": {
 		"dev": "next dev -p 3000",
+		"lint": "biome check src",
+		"lint:fix": "biome check --write src",
+		"lint:fix:unsafe": "biome check --write src --unsafe",
+		"typecheck": "tsc --noEmit",
 		"build": "next build",
 		"start": "next start",
 		"clean": "rimraf .next node_modules .turbo"
 	},
 	"dependencies": {
-		"@hookform/resolvers": "^3.9.0",
+		"@hookform/resolvers": "^5.2.2",
 		"@monaco-editor/react": "^4.6.0",
 		"@plunk/shared": "1.0.0",
 		"@svgr/webpack": "^8.1.0",
@@ -54,7 +58,7 @@
 		"sonner": "^1.5.0",
 		"swr": "2.2.5",
 		"tailwind-scrollbar": "^3.1.0",
-		"zod": "^3.23.8"
+		"zod": "^4.1.11"
 	},
 	"devDependencies": {
 		"@tailwindcss/aspect-ratio": "^0.4.2",
@@ -68,6 +72,6 @@
 		"autoprefixer": "^10.4.19",
 		"postcss": "^8.4.39",
 		"tailwindcss": "^3.4.6",
-		"typescript": "5.5.3"
+		"typescript": "5.9.3"
 	}
 }

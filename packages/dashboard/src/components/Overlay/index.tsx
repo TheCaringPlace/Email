@@ -1,1 +1,1 @@
-export * from './Modal/index';
+export * from "./Modal/index";

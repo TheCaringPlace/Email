@@ -1,1 +1,1 @@
-export {default as FullscreenLoader} from './FullscreenLoader';
+export { default as FullscreenLoader } from "./FullscreenLoader";

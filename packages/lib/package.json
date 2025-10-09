@@ -1,0 +1,28 @@
+{
+	"name": "@plunk/lib",
+	"version": "1.0.0",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"private": true,
+	"dependencies": {
+		"@aws-sdk/client-eventbridge": "^3.901.0",
+		"@aws-sdk/client-sfn": "^3.906.0",
+		"@aws-sdk/client-sqs": "^3.896.0",
+		"@aws-sdk/lib-dynamodb": "^3.895.0",
+		"pino": "^10.0.0",
+		"pino-pretty": "^13.1.1",
+		"uuidv7": "^1.0.2"
+	},
+	"devDependencies": {
+		"typescript": "^5.5.3"
+	},
+	"scripts": {
+		"lint": "biome check src",
+		"lint:fix": "biome check --write src",
+		"lint:fix:unsafe": "biome check --write src --unsafe",
+		"typecheck": "tsc --noEmit",
+		"build": "tsc",
+		"dev": "tsc && tsc -w",
+		"clean": "rimraf dist"
+	}
+}

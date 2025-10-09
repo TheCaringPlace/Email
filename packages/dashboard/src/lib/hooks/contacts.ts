@@ -1,37 +1,8 @@
-import useSWR from 'swr';
-import {Action, Contact, Email, Event, Project, Trigger} from '@prisma/client';
-import {useActiveProject} from './projects';
+import type { Contact, Email, Trigger } from "@plunk/shared";
+import useSWR from "swr";
+import { useActiveProject } from "./projects";
 
-export interface WithProject {
-  id: string;
-  withProject: true;
-}
-
-export interface WithoutProject {
-  id: string;
-  withProject?: false;
-}
-
-export type WithOrWithoutProject<T extends WithProject | WithoutProject> = T extends WithProject
-  ?
-      | (Contact & {
-          emails: Email[];
-          triggers: (Trigger & {
-            event: Event | null;
-            action: Action | null;
-          })[];
-          project: Project;
-        })
-      | null
-  :
-      | (Contact & {
-          emails: Email[];
-          triggers: (Trigger & {
-            event: Event | null;
-            action: Action | null;
-          })[];
-        })
-      | null;
+type ContactWithTrigger = Contact & { triggers: Trigger[] };
 
 /**
  *
@@ -39,41 +10,42 @@ export type WithOrWithoutProject<T extends WithProject | WithoutProject> = T ext
  * @param id
  * @param id.withProject
  */
-export function useContact<T extends WithProject | WithoutProject>({id, withProject = false}: T) {
-  return useSWR<WithOrWithoutProject<T>>(withProject ? `/v1/contacts/${id}?withProject=true` : `/v1/contacts/${id}`);
+export function useContact(id: string) {
+  const activeProject = useActiveProject();
+  return useSWR<Contact & { triggers: Trigger[]; emails: Email[] }>(id && activeProject?.id ? `/projects/${activeProject.id}/contacts/${id}?embed=triggers&embed=emails` : null);
+}
+
+export function useAllContacts() {
+  const activeProject = useActiveProject();
+  return useSWR<Contact[]>(activeProject?.id ? `/projects/${activeProject.id}/contacts/all` : null);
+}
+
+export function useAllContactsWithTriggers() {
+  const activeProject = useActiveProject();
+  return useSWR<(Contact & { triggers: Trigger[] })[]>(activeProject?.id ? `/projects/${activeProject.id}/contacts/all?embed=triggers` : null);
+}
+
+export function useContactsWithTriggers(cursor?: string) {
+  const activeProject = useActiveProject();
+  return useSWR<{
+    items: ContactWithTrigger[];
+    cursor?: string;
+    count: number;
+  }>(activeProject ? `/projects/${activeProject?.id}/contacts?embed=triggers${cursor ? `&cursor=${cursor}` : ""}` : null);
 }
 
 /**
  *
- * @param page
+ * @param cursor
  */
-export function useContacts(page: number) {
+export function useContacts(cursor?: string) {
   const activeProject = useActiveProject();
 
   return useSWR<{
-    contacts: (Contact & {
-      triggers: Trigger[];
-    })[];
+    contacts: Contact[];
+    cursor: string;
     count: number;
-  }>(activeProject ? `/projects/id/${activeProject.id}/contacts?page=${page}` : null);
-}
-
-/**
- *
- */
-export function useContactsCount() {
-  const activeProject = useActiveProject();
-
-  return useSWR<number>(activeProject ? `/projects/id/${activeProject.id}/contacts/count` : null);
-}
-
-/**
- *
- */
-export function useContactMetadata() {
-  const activeProject = useActiveProject();
-
-  return useSWR<string[]>(activeProject ? `/projects/id/${activeProject.id}/contacts/metadata` : null);
+  }>(activeProject ? `/projects/${activeProject.id}/contacts?cursor=${cursor}` : null);
 }
 
 /**
@@ -83,23 +55,21 @@ export function useContactMetadata() {
 export function searchContacts(query: string | undefined) {
   const activeProject = useActiveProject();
 
-  if (!query) {
-    return useSWR<{
-      contacts: (Contact & {
-        triggers: Trigger[];
-        emails: Email[];
-      })[];
-      count: number;
-    }>(activeProject ? `/projects/id/${activeProject.id}/contacts` : null);
+  let url = null;
+  if (activeProject) {
+    if (query) {
+      url = `/projects/${activeProject.id}/contacts/search?query=${query}`;
+    } else {
+      url = `/projects/${activeProject.id}/contacts?embed=triggers`;
+    }
   }
-
   return useSWR<{
     contacts: (Contact & {
       triggers: Trigger[];
       emails: Email[];
     })[];
     count: number;
-  }>(activeProject ? `/projects/id/${activeProject.id}/contacts/search?query=${query}` : null, {
+  }>(url, {
     revalidateOnFocus: false,
     refreshInterval: 0,
   });

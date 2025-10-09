@@ -1,1 +1,1 @@
-export {default as ProjectSelector} from './ProjectSelector';
+export { default as ProjectSelector } from "./ProjectSelector";

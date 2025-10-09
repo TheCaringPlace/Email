@@ -1,10 +1,24 @@
-import { Controller, Get } from "@overnightjs/core";
-import type { Request, Response } from "express";
+import { createRoute, z } from "@hono/zod-openapi";
+import type { AppType } from "../app";
 
-@Controller("health")
-export class Health {
-	@Get("")
-	public async health(req: Request, res: Response) {
-		return res.json({ success: true });
-	}
-}
+export const registerHealthRoutes = (app: AppType) => {
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/health",
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: z.object({ success: z.boolean() }),
+            },
+          },
+          description: "Health check",
+        },
+      },
+    }),
+    async (c) => {
+      return c.json({ success: true }, 200);
+    },
+  );
+};

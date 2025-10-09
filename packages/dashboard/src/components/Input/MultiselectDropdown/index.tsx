@@ -1,1 +1,1 @@
-export {default as MultiselectDropdown} from './MultiselectDropdown';
+export { default as MultiselectDropdown } from "./MultiselectDropdown";

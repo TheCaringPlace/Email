@@ -1,117 +1,159 @@
-import { Controller, Get, Post } from "@overnightjs/core";
-import { UserSchemas, UtilitySchemas } from "@plunk/shared";
-import type { Request, Response } from "express";
-import { DISABLE_SIGNUPS } from "../app/constants";
-import { prisma } from "../database/prisma";
+import { createRoute, z } from "@hono/zod-openapi";
+import { UserPersistence } from "@plunk/lib";
+import { email, id, UserSchemas, UtilitySchemas } from "@plunk/shared";
+import type { AppType } from "../app";
 import { NotAllowed, NotFound } from "../exceptions";
-import { jwt } from "../middleware/auth";
+import { getProblemResponseSchema, RedirectResponseSchema } from "../exceptions/responses";
 import { AuthService } from "../services/AuthService";
-import { UserService } from "../services/UserService";
-import { Keys } from "../services/keys";
-import { REDIS_ONE_MINUTE, redis } from "../services/redis";
 import { createHash } from "../util/hash";
 
-@Controller("auth")
-export class Auth {
-	@Post("login")
-	public async login(req: Request, res: Response) {
-		const { email, password } = UserSchemas.credentials.parse(req.body);
+export const registerAuthRoutes = (app: AppType) => {
+  // login
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/auth/login",
+      request: {
+        body: {
+          content: {
+            "application/json": {
+              schema: UserSchemas.credentials,
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: z.object({
+                id,
+                email,
+                token: z.string(),
+              }),
+            },
+          },
+          description: "Retrieve the user",
+        },
+        302: RedirectResponseSchema,
+        401: getProblemResponseSchema(401),
+      },
+      middleware: [],
+    }),
+    async (c) => {
+      const { email, id, token } = await AuthService.login(c);
+      return c.json(
+        {
+          id,
+          email,
+          token,
+        },
+        200,
+      );
+    },
+  );
 
-		const user = await UserService.email(email);
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/auth/signup",
+      request: {
+        body: {
+          content: {
+            "application/json": {
+              schema: UserSchemas.credentials,
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: UserSchemas.get,
+            },
+          },
+          description: "Retrieve the user",
+        },
+        400: getProblemResponseSchema(400),
+      },
+    }),
+    async (c) => {
+      const user = await AuthService.signup(c);
 
-		if (!user) {
-			return res.json({ success: false, data: "Incorrect email or password" });
-		}
+      return c.json(UserSchemas.get.parse(user), 200);
+    },
+  );
 
-		if (!user.password) {
-			return res.json({
-				success: "redirect",
-				redirect: `/auth/reset?id=${user.id}`,
-			});
-		}
+  const resetSchema = UtilitySchemas.id.merge(UserSchemas.credentials.pick({ password: true }));
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/auth/reset",
+      request: {
+        body: {
+          content: {
+            "application/json": {
+              schema: resetSchema,
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: z.object({ success: z.boolean() }),
+            },
+          },
+          description: "Reset the user's password",
+        },
+        403: getProblemResponseSchema(403),
+        404: getProblemResponseSchema(404),
+      },
+    }),
+    async (c) => {
+      const body = await c.req.json();
+      const { id, password } = resetSchema.parse(body);
+      const userPersistence = new UserPersistence();
+      const user = await userPersistence.get(id);
 
-		const verified = await AuthService.verifyCredentials(email, password);
+      if (!user) {
+        throw new NotFound("user");
+      }
 
-		if (!verified) {
-			return res.json({ success: false, data: "Incorrect email or password" });
-		}
+      if (user.password) {
+        throw new NotAllowed();
+      }
 
-		await redis.set(Keys.User.id(user.id), JSON.stringify(user), "EX", REDIS_ONE_MINUTE * 60);
+      const updatedUser = {
+        ...user,
+        password: await createHash(password),
+      };
+      await userPersistence.put(updatedUser);
 
-		const token = jwt.sign(user.id);
-		const cookie = UserService.cookieOptions();
+      return c.json({ success: true }, 200);
+    },
+  );
 
-		return res
-			.cookie(UserService.COOKIE_NAME, token, cookie)
-			.json({ success: true, data: { id: user.id, email: user.email } });
-	}
-
-	@Post("signup")
-	public async signup(req: Request, res: Response) {
-		if (DISABLE_SIGNUPS) {
-			return res.json({
-				success: false,
-				data: "Signups are currently disabled",
-			});
-		}
-
-		const { email, password } = UserSchemas.credentials.parse(req.body);
-
-		const user = await UserService.email(email);
-
-		if (user) {
-			return res.json({
-				success: false,
-				data: "That email is already associated with another user",
-			});
-		}
-
-		const created_user = await prisma.user.create({
-			data: {
-				email,
-				password: await createHash(password),
-			},
-		});
-
-		await redis.set(Keys.User.id(created_user.id), JSON.stringify(created_user), "EX", REDIS_ONE_MINUTE * 60);
-
-		const token = jwt.sign(created_user.id);
-		const cookie = UserService.cookieOptions();
-
-		return res.cookie(UserService.COOKIE_NAME, token, cookie).json({
-			success: true,
-			data: { id: created_user.id, email: created_user.email },
-		});
-	}
-
-	@Post("reset")
-	public async reset(req: Request, res: Response) {
-		const { id, password } = UtilitySchemas.id.merge(UserSchemas.credentials.pick({ password: true })).parse(req.body);
-
-		const user = await UserService.id(id);
-
-		if (!user) {
-			throw new NotFound("user");
-		}
-
-		if (user.password) {
-			throw new NotAllowed();
-		}
-
-		await prisma.user.update({
-			where: { id },
-			data: { password: await createHash(password) },
-		});
-
-		await redis.del(Keys.User.id(user.id));
-		await redis.del(Keys.User.email(user.email));
-
-		return res.json({ success: true });
-	}
-
-	@Get("logout")
-	public logout(req: Request, res: Response) {
-		res.cookie(UserService.COOKIE_NAME, "", UserService.cookieOptions(new Date()));
-		return res.json(true);
-	}
-}
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/auth/logout",
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: z.object({ success: z.boolean() }),
+            },
+          },
+          description: "Logout the user",
+        },
+      },
+    }),
+    async (c) => {
+      await AuthService.logout(c);
+      return c.json({ success: true }, 200);
+    },
+  );
+};

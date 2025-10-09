@@ -1,9 +1,18 @@
+import type { ContentfulStatusCode } from "hono/utils/http-status";
+
 export class HttpException extends Error {
   public constructor(
-    public readonly code: number,
+    public readonly code: ContentfulStatusCode,
     message: string,
+    public readonly headers?: Record<string, string>,
   ) {
     super(message);
+  }
+}
+
+export class BadRequest extends HttpException {
+  public constructor(message: string) {
+    super(400, message);
   }
 }
 
@@ -22,13 +31,19 @@ export class NotAllowed extends HttpException {
    * Construct a new NotAllowed exception
    * @param msg
    */
-  public constructor(msg = 'You are not allowed to perform this action') {
+  public constructor(msg = "You are not allowed to perform this action") {
     super(403, msg);
+  }
+}
+
+export class Conflict extends HttpException {
+  public constructor(msg = "A conflict occurred") {
+    super(409, msg);
   }
 }
 
 export class NotAuthenticated extends HttpException {
   public constructor() {
-    super(401, 'You need to be authenticated to do this');
+    super(401, "You need to be authenticated to do this");
   }
 }

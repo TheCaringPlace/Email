@@ -1,5 +1,5 @@
-import {AnimatePresence, motion} from 'framer-motion';
-import React, {MutableRefObject, useEffect, useState} from 'react';
+import { AnimatePresence, motion } from "framer-motion";
+import React, { type MutableRefObject, useEffect, useState } from "react";
 
 export interface Dropdownprops {
   withSearch?: boolean;
@@ -24,44 +24,35 @@ export interface Dropdownprops {
  * @param root0.inModal
  * @param root0.disabled
  */
-export default function Dropdown({
-  onChange,
-  values,
-  selectedValue,
-  className,
-  withSearch = false,
-  inModal = false,
-  disabled = false,
-}: Dropdownprops) {
+export default function Dropdown({ onChange, values, selectedValue, className, withSearch = false, inModal = false, disabled = false }: Dropdownprops) {
   const [open, setOpen] = useState(false);
   const ref = React.createRef<HTMLDivElement>();
 
   useEffect(() => {
     const mutableRef = ref as MutableRefObject<HTMLDivElement | null>;
 
-    const handleClickOutside = (event: any) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      if (mutableRef.current && !mutableRef.current.contains(event.target) && open) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (mutableRef.current && !mutableRef.current.contains(event.target as Node) && open) {
         setOpen(false);
-        setQuery('');
+        setQuery("");
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [ref]);
+  }, [ref, open]);
 
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
 
   return (
-    <div ref={ref} className={className ?? ''}>
+    <div ref={ref} className={className ?? ""}>
       <div className="relative mt-1 w-full">
         <button
           type="button"
           className={`${
-            disabled ? 'cursor-default bg-neutral-100' : 'cursor-pointer bg-white'
+            disabled ? "cursor-default bg-neutral-100" : "cursor-pointer bg-white"
           } relative w-full rounded border border-neutral-300 py-2 pl-3 pr-10 text-left focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500 sm:text-sm`}
           aria-haspopup="listbox"
           aria-expanded="true"
@@ -73,20 +64,20 @@ export default function Dropdown({
           }}
         >
           <span className="block flex items-center truncate">
-            {values.find(v => v.value === selectedValue)
+            {values.find((v) => v.value === selectedValue)
               ? `${values
-                  .find(v => v.value === selectedValue)
+                  .find((v) => v.value === selectedValue)
                   ?.name.charAt(0)
                   .toUpperCase()}${values
-                  .find(v => v.value === selectedValue)
+                  .find((v) => v.value === selectedValue)
                   ?.name.slice(1)
                   .toLowerCase()}`
-              : 'No value selected'}
+              : "No value selected"}
           </span>
           <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
             <motion.svg
-              initial={{rotate: '90deg'}}
-              animate={open ? {rotate: '0deg'} : {rotate: '90deg'}}
+              initial={{ rotate: "90deg" }}
+              animate={open ? { rotate: "0deg" } : { rotate: "90deg" }}
               className="h-5 w-5 text-neutral-400"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 20 20"
@@ -105,13 +96,11 @@ export default function Dropdown({
         <AnimatePresence>
           {open && (
             <motion.ul
-              initial={{opacity: 0, height: 0}}
-              animate={{opacity: 1, height: 'auto'}}
-              exit={{opacity: 0, height: 0}}
-              transition={{duration: 0.2, ease: 'easeInOut'}}
-              className={`${
-                inModal ? 'fixed w-64' : 'absolute w-full'
-              } z-50 mt-1 max-h-72 rounded-md border border-black border-opacity-10 bg-white text-base shadow-lg focus:outline-none sm:text-sm`}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              className={`${inModal ? "fixed w-64" : "absolute w-full"} z-50 mt-1 max-h-72 rounded-md border border-black border-opacity-10 bg-white text-base shadow-lg focus:outline-none sm:text-sm`}
               tabIndex={-1}
               role="listbox"
             >
@@ -122,10 +111,10 @@ export default function Dropdown({
                       <input
                         type="search"
                         name="search"
-                        autoComplete={'off'}
+                        autoComplete={"off"}
                         className="block w-full rounded border-neutral-300 border-opacity-5 focus:border-neutral-800 sm:text-sm"
-                        placeholder={'Search'}
-                        onChange={e => setQuery(e.target.value)}
+                        placeholder={"Search"}
+                        onChange={(e) => setQuery(e.target.value)}
                       />
                     </li>
                     <hr />
@@ -133,47 +122,28 @@ export default function Dropdown({
                 ) : null}
               </div>
 
-              <div
-                className={
-                  'scrollbar-w-2 scrollbar scrollbar-thumb-rounded-full scrollbar-thumb-neutral-400 scrollbar-track-neutral-100 max-h-52 overflow-y-scroll p-1'
-                }
-              >
-                {values.filter(value => value.name.toLowerCase().startsWith(query.toLowerCase())).length === 0 ? (
-                  <li className="relative cursor-default select-none py-2.5 pl-3 pr-9 text-neutral-800">
-                    No results found
-                  </li>
+              <div className={"scrollbar-w-2 scrollbar scrollbar-thumb-rounded-full scrollbar-thumb-neutral-400 scrollbar-track-neutral-100 max-h-52 overflow-y-scroll p-1"}>
+                {values.filter((value) => value.name.toLowerCase().startsWith(query.toLowerCase())).length === 0 ? (
+                  <li className="relative cursor-default select-none py-2.5 pl-3 pr-9 text-neutral-800">No results found</li>
                 ) : (
                   values
-                    .filter(value => value.name.toLowerCase().startsWith(query.toLowerCase()))
-                    .map((value, index) => {
+                    .filter((value) => value.name.toLowerCase().startsWith(query.toLowerCase()))
+                    .map((value) => {
                       return (
                         <li
-                          key={`x-${index}`}
+                          key={`x-${value.name}-${value.value}`}
                           className="relative flex cursor-default select-none items-center rounded-md py-2.5 pl-2.5 text-neutral-800 transition ease-in-out hover:bg-neutral-100"
-                          role="option"
                           onClick={() => {
                             onChange(value.value);
-                            setQuery('');
+                            setQuery("");
                             setOpen(!open);
                           }}
                         >
-                          <span className="truncate">
-                            {value.name.charAt(0).toUpperCase() + value.name.slice(1).toLowerCase()}
-                          </span>
+                          <span className="truncate">{value.name.charAt(0).toUpperCase() + value.name.slice(1).toLowerCase()}</span>
                           {value.value === selectedValue ? (
                             <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-neutral-800">
-                              <svg
-                                className="h-5 w-5"
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                                aria-hidden="true"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                  clipRule="evenodd"
-                                />
+                              <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                               </svg>
                             </span>
                           ) : null}

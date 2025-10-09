@@ -1,5 +1,4 @@
-import Document, {Head, Html, Main, NextScript} from 'next/document';
-import React from 'react';
+import Document, { Head, Html, Main, NextScript } from "next/document";
 
 export default class MyDocument extends Document {
   public render() {
@@ -27,7 +26,7 @@ export default class MyDocument extends Document {
           <meta name="theme-color" content="#171717" />
           {/* End favicon */}
         </Head>
-        <body className={'cursor-default antialiased'}>
+        <body className={"cursor-default antialiased"}>
           <Main />
           <NextScript />
         </body>

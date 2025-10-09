@@ -1,6 +1,5 @@
-import {Tabs} from '../Tabs';
-import React from 'react';
-import {useRouter} from 'next/router';
+import { useRouter } from "next/router";
+import { Tabs } from "../Tabs";
 
 /**
  *
@@ -11,8 +10,8 @@ export default function AnalyticsTabs() {
   const router = useRouter();
 
   const links = [
-    {to: '/analytics', text: 'Overview', active: router.route === '/analytics'},
-    {to: '/analytics/clicks', text: 'Clicks', active: router.route === '/analytics/clicks'},
+    { to: "/analytics", text: "Overview", active: router.route === "/analytics" },
+    { to: "/analytics/clicks", text: "Clicks", active: router.route === "/analytics/clicks" },
   ];
 
   return <Tabs links={links} />;

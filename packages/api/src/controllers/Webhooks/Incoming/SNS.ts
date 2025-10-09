@@ -1,169 +1,257 @@
-import { Controller, Post } from "@overnightjs/core";
-import type { Event } from "@prisma/client";
-import type { Request, Response } from "express";
-import signale from "signale";
-import { prisma } from "../../../database/prisma";
-import { ActionService } from "../../../services/ActionService";
-import { ProjectService } from "../../../services/ProjectService";
+// import { createRoute, z } from "@hono/zod-openapi";
+// import {
+// 	ActionPersistence,
+// 	CampaignPersistence,
+// 	type Contact,
+// 	ContactPersistence,
+// 	type Email,
+// 	EmailPersistence,
+// 	EventPersistence,
+// 	type Project,
+// 	ProjectPersistence,
+// 	TriggerPersistence,
+// } from "@plunk/shared";
+// import signale from "signale";
+// import type { AppType } from "../../../app";
+// import { ActionsService } from "../../../services/ActionsService";
 
-const eventMap = {
-	Bounce: "BOUNCED",
-	Delivery: "DELIVERED",
-	Open: "OPENED",
-	Complaint: "COMPLAINT",
-	Click: "CLICKED",
-} as const;
+// const eventMap = {
+// 	Bounce: "BOUNCED",
+// 	Delivery: "DELIVERED",
+// 	Open: "OPENED",
+// 	Complaint: "COMPLAINT",
+// 	Click: "CLICKED",
+// } as const;
 
-@Controller("sns")
-export class SNSWebhook {
-	@Post()
-	public async receiveSNSWebhook(req: Request, res: Response) {
-		try {
-			const body = JSON.parse(req.body.Message);
+// async function handleClick(
+// 	project: Project,
+// 	contact: Contact,
+// 	email: Email,
+// 	body: any,
+// 	eventPersistence: EventPersistence,
+// 	triggerPersistence: TriggerPersistence,
+// ) {
+// 	signale.success(`Click received for ${contact.email} from ${project.name}`);
 
-			const email = await prisma.email.findUnique({
-				where: { messageId: body.mail.messageId },
-				include: {
-					contact: true,
-					action: { include: { template: { include: { events: true } } } },
-					campaign: { include: { events: true } },
-				},
-			});
+// 	let event = await eventPersistence.getByName(`email_${body.eventType}`);
+// 	if (!event) {
+// 		event = await eventPersistence.create({
+// 			name: `email_${body.eventType}`,
+// 			project: project.id,
+// 		});
+// 	}
 
-			if (!email) {
-				return res.status(200).json({});
-			}
+// 	await triggerPersistence.create({
+// 		contact: contact.id,
+// 		event: event.id,
+// 		action: email.action,
+// 		email: email.id,
+// 		project: project.id,
+// 		data: {
+// 			email: email.id,
+// 			link: body.click.link,
+// 		},
+// 	});
+// }
 
-			const project = await ProjectService.id(email.contact.projectId);
+// export const registerSNSWebhookRoutes = (app: AppType) => {
+// 	app.openapi(
+// 		createRoute({
+// 			method: "post",
+// 			path: "/webhooks/incoming/sns",
+// 			request: {
+// 				body: {
+// 					content: {
+// 						"application/json": {
+// 							schema: z.object({
+// 								messageId: z.string(),
+// 							}),
+// 						},
+// 					},
+// 				},
+// 			},
+// 			responses: {
+// 				200: {
+// 					content: {
+// 						"application/json": {
+// 							schema: z.any(),
+// 						},
+// 					},
+// 					description: "Receive SNS webhook",
+// 				},
+// 			},
+// 		}),
+// 		async (c) => {
+// 			try {
+// 				const parsed = await c.req.parseBody();
+// 				const body = JSON.parse(parsed.Message as string);
 
-			if (!project) {
-				return res.status(200).json({ success: false });
-			}
+// 				// Find email by messageId in DynamoDB
+// 				const emailPersistence = new EmailPersistence();
+// 				const email = await emailPersistence.getByMessageId(body.mail.messageId);
 
-			// The email was a transactional email
-			if (email.projectId) {
-				if (body.eventType === "Click") {
-					signale.success(`Click received for ${email.contact.email} from ${project.name}`);
-					
-					await prisma.click.create({
-						data: { emailId: email.id, link: body.click.link },
-					});
-					
-					return res.status(200).json({ success: true });
-				}
+// 				if (!email) {
+// 					return c.json({});
+// 				}
 
-				if (body.eventType === "Complaint") {
-					signale.warn(`Complaint received for ${email.contact.email} from ${project.name}`);
-				}
+// 				const projectId = email.project;
+// 				const actionPersistence = new ActionPersistence(projectId);
+// 				const contactPersistence = new ContactPersistence(projectId);
+// 				// Get related entities
+// 				const [contact, action, campaign, project] = await Promise.all([
+// 					contactPersistence.get(email.contact),
+// 					email.action ? actionPersistence.get(email.action) : null,
+// 					email.campaign ? new CampaignPersistence(projectId).get(email.campaign) : null,
+// 					email.project ? new ProjectPersistence().get(email.project) : null,
+// 				]);
 
-				if (body.eventType === "Bounce") {
-					signale.warn(`Bounce received for ${email.contact.email} from ${project.name}`);
-				}
+// 				if (!contact) {
+// 					return c.json({});
+// 				}
 
-				await prisma.email.update({
-					where: { messageId: body.mail.messageId },
-					data: {
-						status: eventMap[body.eventType as "Bounce" | "Delivery" | "Open" | "Complaint"],
-					},
-				});
+// 				if (!project) {
+// 					return c.json({ success: false });
+// 				}
 
-				return res.status(200).json({ success: true });
-			}
+// 				const eventPersistence = new EventPersistence(projectId);
+// 				const triggerPersistence = new TriggerPersistence(projectId);
 
-			if (body.eventType === "Complaint" || body.eventType === "Bounce") {
-				signale.warn(
-					`${body.eventType === "Complaint" ? "Complaint" : "Bounce"} received for ${email.contact.email} from ${project.name}`,
-				);
+// 				// The email was a transactional email
+// 				if (email.sendType === "TRANSACTIONAL") {
+// 					if (body.eventType === "Click") {
+// 						await handleClick(project, contact, email, body, eventPersistence, triggerPersistence);
+// 						return c.json({ success: true });
+// 					}
 
-				await prisma.email.update({
-					where: { messageId: body.mail.messageId },
-					data: { status: eventMap[body.eventType as "Bounce" | "Complaint"] },
-				});
+// 					if (body.eventType === "Complaint") {
+// 						signale.warn(`Complaint received for ${contact.email} from ${project.name}`);
+// 					}
 
-				await prisma.contact.update({
-					where: { id: email.contactId },
-					data: { subscribed: false },
-				});
+// 					if (body.eventType === "Bounce") {
+// 						signale.warn(`Bounce received for ${contact.email} from ${project.name}`);
+// 					}
 
-				return res.status(200).json({ success: true });
-			}
+// 					// Update email status in DynamoDB
+// 					const updatedEmail = {
+// 						...email,
+// 						status: eventMap[body.eventType as "Bounce" | "Delivery" | "Open" | "Complaint"],
+// 					};
+// 					await emailPersistence.put(updatedEmail);
 
-			if (body.eventType === "Click") {
-				signale.success(`Click received for ${email.contact.email} from ${project.name}`);
+// 					return c.json({ success: true });
+// 				}
 
-				await prisma.click.create({
-					data: { emailId: email.id, link: body.click.link },
-				});
+// 				if (body.eventType === "Complaint" || body.eventType === "Bounce") {
+// 					signale.warn(`${body.eventType} received for ${contact.email} from ${project.name}`);
 
-				return res.status(200).json({ success: true });
-			}
+// 					// Update email status in DynamoDB
+// 					const updatedEmail = {
+// 						...email,
+// 						status: eventMap[body.eventType as "Bounce" | "Complaint"],
+// 					};
+// 					await emailPersistence.put(updatedEmail);
 
-			let event: Event | undefined;
+// 					// Update contact subscription status in DynamoDB
+// 					const updatedContact = {
+// 						...contact,
+// 						subscribed: false,
+// 					};
+// 					await contactPersistence.put(updatedContact);
 
-			if (email.action) {
-				event = email.action.template.events.find((e) =>
-					e.name.includes(
-						(body.eventType as "Bounce" | "Delivery" | "Open" | "Complaint" | "Click") === "Delivery"
-							? "delivered"
-							: "opened",
-					),
-				);
-			}
+// 					return c.json({ success: true });
+// 				}
 
-			if (email.campaign) {
-				event = email.campaign.events.find((e) =>
-					e.name.includes(
-						(body.eventType as "Bounce" | "Delivery" | "Open" | "Complaint" | "Click") === "Delivery"
-							? "delivered"
-							: "opened",
-					),
-				);
-			}
+// 				if (body.eventType === "Click") {
+// 					await handleClick(project, contact, email, body, eventPersistence, triggerPersistence);
+// 					return c.json({ success: true });
+// 				}
 
-			if (!event) {
-				return res.status(200).json({ success: false });
-			}
+// 				let event: any = undefined;
+// 				if (action) {
+// 					// Get template events for action
+// 					const templateEvents = await eventPersistence.findAllBy({
+// 						partitionKey: "template",
+// 						partionValue: action.template,
+// 					});
+// 					event = templateEvents.find((e) =>
+// 						e.name.includes(
+// 							(body.eventType as "Bounce" | "Delivery" | "Open" | "Complaint" | "Click") === "Delivery"
+// 								? "delivered"
+// 								: "opened",
+// 						),
+// 					);
+// 				}
 
-			switch (body.eventType as "Delivery" | "Open") {
-				case "Delivery":
-					signale.success(`Delivery received for ${email.contact.email} from ${project.name}`);
-					await prisma.email.update({
-						where: { messageId: body.mail.messageId },
-						data: { status: "DELIVERED" },
-					});
+// 				if (campaign) {
+// 					// Get campaign events
+// 					const campaignEvents = await eventPersistence.findAllBy({
+// 						partitionKey: "campaign",
+// 						partionValue: campaign.id,
+// 					});
+// 					event = campaignEvents.find((e: any) =>
+// 						e.name.includes(
+// 							(body.eventType as "Bounce" | "Delivery" | "Open" | "Complaint" | "Click") === "Delivery"
+// 								? "delivered"
+// 								: "opened",
+// 						),
+// 					);
+// 				}
 
-					await prisma.trigger.create({
-						data: { contactId: email.contactId, eventId: event.id },
-					});
+// 				if (!event) {
+// 					return c.json({ success: false });
+// 				}
 
-					break;
-				case "Open":
-					signale.success(`Open received for ${email.contact.email} from ${project.name}`);
-					await prisma.email.update({
-						where: { messageId: body.mail.messageId },
-						data: { status: "OPENED" },
-					});
-					await prisma.trigger.create({
-						data: { contactId: email.contactId, eventId: event.id },
-					});
+// 				switch (body.eventType as "Delivery" | "Open") {
+// 					case "Delivery": {
+// 						signale.success(`Delivery received for ${contact.email} from ${project.name}`);
+// 						// Update email status in DynamoDB
+// 						const deliveredEmail = {
+// 							...email,
+// 							status: "DELIVERED",
+// 						} as const;
+// 						await emailPersistence.put(deliveredEmail);
+// 						await triggerPersistence.create({
+// 							contact: contact.id,
+// 							event: event.id,
+// 							project: project.id,
+// 						});
 
-					break;
-			}
+// 						break;
+// 					}
+// 					case "Open":
+// 						signale.success(`Open received for ${contact.email} from ${project.name}`);
+// 						// Update email status
+// 						await emailPersistence.put({
+// 							...email,
+// 							status: "OPENED",
+// 						} as const);
 
-			if (email.action) {
-				void ActionService.trigger({ event, contact: email.contact, project });
-			}
-		} catch (e) {
-			if (req.body.SubscribeURL) {
-				signale.info("--------------");
-				signale.info("SNS Topic Confirmation URL:");
-				signale.info(req.body.SubscribeURL);
-				signale.info("--------------");
-			} else {
-				signale.error(e);
-			}
-		}
+// 						// Create trigger
+// 						await triggerPersistence.create({
+// 							contact: contact.id,
+// 							event: event.id,
+// 							project: project.id,
+// 						});
 
-		return res.status(200).json({ success: true });
-	}
-}
+// 						break;
+// 				}
+
+// 				if (email.action) {
+// 					await ActionsService.trigger({ event, contact, project });
+// 				}
+// 			} catch (e) {
+// 				const body = await c.req.parseBody();
+// 				if (body.SubscribeURL) {
+// 					signale.info("--------------");
+// 					signale.info("SNS Topic Confirmation URL:");
+// 					signale.info(body.SubscribeURL);
+// 					signale.info("--------------");
+// 				} else {
+// 					signale.error(e);
+// 				}
+// 			}
+
+// 			return c.json({ success: true });
+// 		},
+// 	);
+// };

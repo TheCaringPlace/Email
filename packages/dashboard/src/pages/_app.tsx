@@ -7,7 +7,6 @@ import type { AppProps } from "next/app";
 import Head from "next/head";
 import Router, { useRouter } from "next/router";
 import NProgress from "nprogress";
-import React from "react";
 import { Toaster } from "sonner";
 import { SWRConfig } from "swr";
 import { network } from "../lib/network";
@@ -36,28 +35,28 @@ Router.events.on("routeChangeError", () => NProgress.done());
  * @param props.pageProps
  */
 function App({ Component, pageProps }: AppProps) {
-	const router = useRouter();
-	const { data: user, error } = useUser();
+  const router = useRouter();
+  const { data: user, error } = useUser();
 
-	if (error && !NO_AUTH_ROUTES.includes(router.route)) {
-		return <Redirect to={"/auth/login"} />;
-	}
+  if (error && !NO_AUTH_ROUTES.includes(router.route)) {
+    return <Redirect to={"/auth/login"} />;
+  }
 
-	if (!user && !NO_AUTH_ROUTES.includes(router.route)) {
-		return <FullscreenLoader />;
-	}
+  if (!user && !NO_AUTH_ROUTES.includes(router.route)) {
+    return <FullscreenLoader />;
+  }
 
-	return (
-		<>
-			<Head>
-				<title>Plunk Dashboard | The Open-Source Email Platform</title>
-				<meta name="viewport" content="width=device-width, initial-scale=1.0" key={"viewport"} />
-			</Head>
+  return (
+    <>
+      <Head>
+        <title>Plunk Dashboard | The Open-Source Email Platform</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" key={"viewport"} />
+      </Head>
 
-			<Toaster position={"bottom-right"} />
-			<Component {...pageProps} />
-		</>
-	);
+      <Toaster position={"bottom-right"} />
+      <Component {...pageProps} />
+    </>
+  );
 }
 
 /**
@@ -65,35 +64,32 @@ function App({ Component, pageProps }: AppProps) {
  * @param props Default nextjs props
  */
 export default function WithProviders(props: AppProps) {
-	return (
-		<SWRConfig
-			value={{
-				fetcher: (url: string) => network.fetch("GET", url),
-				revalidateOnFocus: true,
-			}}
-		>
-			<JotaiProvider>
-				<DefaultSeo
-					defaultTitle={"Plunk Dashboard | The Open-Source Email Platform"}
-					title={"Plunk Dashboard | The Open-Source Email Platform"}
-					description={
-						"Plunk is the open-source, affordable email platform that brings together marketing, transactional and broadcast emails into one single, complete solution"
-					}
-					twitter={{
-						cardType: "summary_large_image",
-						handle: "@useplunk",
-						site: "@useplunk",
-					}}
-					openGraph={{
-						title: "Plunk Dashboard | The Open-Source Email Platform",
-						description:
-							"Plunk is the open-source, developer-friendly email platform that brings together marketing, transactional and broadcast emails into one single, complete solution",
-						images: [{ url: "https://www.useplunk.com/assets/card.png", alt: "Plunk" }],
-					}}
-				/>
+  return (
+    <SWRConfig
+      value={{
+        fetcher: (url: string) => network.fetch(url, { method: "GET" }),
+        revalidateOnFocus: true,
+      }}
+    >
+      <JotaiProvider>
+        <DefaultSeo
+          defaultTitle={"Plunk Dashboard | The Open-Source Email Platform"}
+          title={"Plunk Dashboard | The Open-Source Email Platform"}
+          description={"Plunk is the open-source, affordable email platform that brings together marketing, transactional and broadcast emails into one single, complete solution"}
+          twitter={{
+            cardType: "summary_large_image",
+            handle: "@useplunk",
+            site: "@useplunk",
+          }}
+          openGraph={{
+            title: "Plunk Dashboard | The Open-Source Email Platform",
+            description: "Plunk is the open-source, developer-friendly email platform that brings together marketing, transactional and broadcast emails into one single, complete solution",
+            images: [{ url: "https://www.useplunk.com/assets/card.png", alt: "Plunk" }],
+          }}
+        />
 
-				<App {...props} />
-			</JotaiProvider>
-		</SWRConfig>
-	);
+        <App {...props} />
+      </JotaiProvider>
+    </SWRConfig>
+  );
 }

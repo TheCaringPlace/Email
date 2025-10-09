@@ -1,157 +1,130 @@
-import dayjs from "dayjs";
-import type { NextFunction, Request, Response } from "express";
-import jsonwebtoken from "jsonwebtoken";
-import { JWT_SECRET } from "../app/constants";
-import { HttpException, NotAuthenticated } from "../exceptions";
+import { MembershipPersistence, ProjectPersistence } from "@plunk/lib";
+import type { HonoRequest } from "hono";
+import { createMiddleware } from "hono/factory";
+import { HttpException } from "../exceptions";
+import { AuthService } from "../services/AuthService";
 
-export interface IJwt {
-	type: "jwt";
-	userId: string;
+async function getProjectId(request: HonoRequest): Promise<string> {
+  let projectId = request.param("projectId") || request.query("projectId");
+
+  if (!projectId) {
+    const body = await request.json();
+    projectId = body.projectId as string | undefined;
+  }
+
+  if (!projectId) {
+    throw new HttpException(400, "Project ID is required");
+  }
+
+  return projectId;
 }
 
-export interface ISecret {
-	type: "secret";
-	sk: string;
-}
+export const isAuthenticatedUser = createMiddleware(async (c, next) => {
+  c.set("auth", AuthService.parseToken(c, "user"));
+  await next();
+});
 
-export interface IKey {
-	type: "key";
-	key: string;
-}
+export const isAuthenticatedProjectMemberKey = createMiddleware(async (c, next) => {
+  const auth = AuthService.parseToken(c);
+  const projectId = await getProjectId(c.req);
+  if (auth.type === "secret" || auth.type === "public") {
+    const projectPersistence = new ProjectPersistence();
+    const project = await projectPersistence.get(projectId);
+    if (!project) {
+      throw new HttpException(404, "Project not found");
+    }
+    if (project.id !== auth.sub || (project.secret !== auth.kid && project.public !== auth.kid)) {
+      throw new HttpException(403, "Project not found");
+    }
+    c.set("auth", auth);
+  } else {
+    const membershipPersistence = new MembershipPersistence();
+    const isMember = await membershipPersistence.isMember(projectId, auth.sub);
+    if (!isMember) {
+      throw new HttpException(404, "Project not found");
+    }
+  }
+  await next();
+});
 
-/**
- * Middleware to check if this unsubscribe is authenticated on the dashboard
- * @param req
- * @param res
- * @param next
- */
-export const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
-	res.locals.auth = { type: "jwt", userId: parseJwt(req) };
+export const isAuthenticatedProjectMemberOrSecretKey = createMiddleware(async (c, next) => {
+  const auth = AuthService.parseToken(c);
+  if (auth.type !== "user" && auth.type !== "secret") {
+    throw new HttpException(400, "Invalid authorization token for request");
+  }
+  const projectId = await getProjectId(c.req);
+  if (auth.type === "secret") {
+    const projectPersistence = new ProjectPersistence();
+    const project = await projectPersistence.get(projectId);
+    if (!project) {
+      throw new HttpException(404, "Project not found");
+    }
+    if (project.id !== auth.sub || project.secret !== auth.kid) {
+      throw new HttpException(403, "Project not found");
+    }
+    c.set("auth", auth);
+  } else {
+    const membershipPersistence = new MembershipPersistence();
+    const isMember = await membershipPersistence.isMember(projectId, auth.sub);
+    if (!isMember) {
+      throw new HttpException(404, "Project not found");
+    }
+  }
+  await next();
+});
 
-	next();
-};
+export const isAuthenticatedProjectMember = createMiddleware(async (c, next) => {
+  const auth = AuthService.parseToken(c, "user");
+  if (auth.type !== "user") {
+    throw new HttpException(400, "Invalid authorization token for request");
+  }
 
-/**
- * Middleware to check if this request is signed with an API secret key
- * @param req
- * @param res
- * @param next
- */
-export const isValidSecretKey = (req: Request, res: Response, next: NextFunction) => {
-	res.locals.auth = { type: "secret", sk: parseBearer(req, "secret") };
+  const projectId = await getProjectId(c.req);
+  const membershipPersistence = new MembershipPersistence();
+  const isMember = await membershipPersistence.isMember(projectId, auth.sub);
+  if (!isMember) {
+    throw new HttpException(404, "Project not found");
+  }
+  c.set("auth", auth);
+  await next();
+});
 
-	next();
-};
+export const isAuthenticatedProjectAdmin = createMiddleware(async (c, next) => {
+  const auth = AuthService.parseToken(c, "user");
+  if (auth.type !== "user") {
+    throw new HttpException(400, "Invalid authorization token for request");
+  }
 
-export const isValidKey = (req: Request, res: Response, next: NextFunction) => {
-	res.locals.auth = { type: "key", key: parseBearer(req) };
+  const projectId = await getProjectId(c.req);
+  const membershipPersistence = new MembershipPersistence();
+  const isAdmin = await membershipPersistence.isAdmin(projectId, auth.sub);
+  const isMember = await membershipPersistence.isMember(projectId, auth.sub);
+  if (!isAdmin && !isMember) {
+    throw new HttpException(404, "Project not found");
+  }
+  if (!isAdmin) {
+    throw new HttpException(403, "You do not have permission to perform this action");
+  }
+  c.set("auth", auth);
+  await next();
+});
 
-	next();
-};
+export const isAuthenticatedSecretKey = createMiddleware(async (c, next) => {
+  const auth = AuthService.parseToken(c, "secret");
+  const projectId = await getProjectId(c.req);
+  if (auth.sub !== projectId) {
+    throw new HttpException(400, "Invalid authorization token for request");
+  }
+  c.set("auth", auth);
+  await next();
+});
 
-export const jwt = {
-	/**
-	 * Extracts a unsubscribe id from a jwt
-	 * @param token The JWT token
-	 */
-	verify(token: string): string | null {
-		try {
-			const verified = jsonwebtoken.verify(token, JWT_SECRET) as {
-				id: string;
-			};
-			return verified.id;
-		} catch (e) {
-			return null;
-		}
-	},
-	/**
-	 * Signs a JWT token
-	 * @param id The unsubscribe's ID to sign into a jwt token
-	 */
-	sign(id: string): string {
-		return jsonwebtoken.sign({ id }, JWT_SECRET, {
-			expiresIn: "168h",
-		});
-	},
-	/**
-	 * Find out when a JWT expires
-	 * @param token The unsubscribe's jwt token
-	 */
-	expires(token: string): dayjs.Dayjs {
-		const { exp } = jsonwebtoken.verify(token, JWT_SECRET) as {
-			exp?: number;
-		};
-		return dayjs(exp);
-	},
-};
-
-/**
- * Parse a unsubscribe's ID from the request JWT token
- * @param request The express request object
- */
-export function parseJwt(request: Request): string {
-	const token: string | undefined = request.cookies.token;
-
-	if (!token) {
-		throw new NotAuthenticated();
-	}
-
-	const id = jwt.verify(token);
-
-	if (!id) {
-		throw new NotAuthenticated();
-	}
-
-	return id;
-}
-
-/**
- * Parse a bearer token from the request headers
- * @param request The express request object
- * @param type
- */
-export function parseBearer(request: Request, type?: "secret" | "public"): string {
-	const bearer: string | undefined = request.headers.authorization;
-
-	if (!bearer) {
-		throw new HttpException(401, "No authorization header passed");
-	}
-
-	if (!bearer.includes("Bearer")) {
-		throw new HttpException(401, "Please add Bearer in front of your API key");
-	}
-
-	const split = bearer.split(" ");
-
-	if (!(split[0] === "Bearer") || split.length > 2) {
-		throw new HttpException(401, "Your authorization header is malformed. Please pass your API key as Bearer sk_...");
-	}
-
-	if (!type && !split[1].startsWith("sk_") && !split[1].startsWith("pk_")) {
-		throw new HttpException(401, "Your API key could not be parsed. API keys start with sk_ or pk_");
-	}
-
-	if (!type) {
-		return split[1];
-	}
-
-	if (type === "secret" && split[1].startsWith("pk_")) {
-		throw new HttpException(401, "You attached a public key but this route may only be accessed with a secret key");
-	}
-
-	if (type === "secret" && !split[1].startsWith("sk_")) {
-		throw new HttpException(
-			401,
-			"Your secret key could not be parsed. Secret keys start with sk_ and should be passed in the authorization header as Bearer sk_...",
-		);
-	}
-
-	if (type === "public" && !split[1].startsWith("pk_")) {
-		throw new HttpException(
-			401,
-			"Your public key could not be parsed. Public keys start with pk_ and should be passed in the authorization header as Bearer sk_...",
-		);
-	}
-
-	return split[1];
-}
+export const isAuthenticatedPublicKey = createMiddleware(async (c, next) => {
+  const auth = AuthService.parseToken(c, "public");
+  const projectId = await getProjectId(c.req);
+  if (auth.sub !== projectId) {
+    throw new HttpException(400, "Invalid authorization token for request");
+  }
+  c.set("auth", auth);
+  await next();
+});

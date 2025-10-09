@@ -1,35 +1,35 @@
-import {mergeAttributes, Node, wrappingInputRule} from '@tiptap/core';
+import { mergeAttributes, Node, wrappingInputRule } from "@tiptap/core";
 
-export type colors = 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'indigo' | 'purple' | 'pink' | 'black';
+export type colors = "red" | "orange" | "yellow" | "green" | "blue" | "indigo" | "purple" | "pink" | "black";
 
 // Map each color to a tailwind color hex code for 500
 const colorMap = {
-  red: '#ef4444',
-  orange: '#f97316',
-  yellow: '#facc15',
-  green: '#22c55e',
-  blue: '#2563eb',
-  indigo: '#6366f1',
-  purple: '#8b5cf6',
-  pink: '#ec4899',
-  black: '#171717',
+  red: "#ef4444",
+  orange: "#f97316",
+  yellow: "#facc15",
+  green: "#22c55e",
+  blue: "#2563eb",
+  indigo: "#6366f1",
+  purple: "#8b5cf6",
+  pink: "#ec4899",
+  black: "#171717",
 } as const;
 
 export interface ButtonOptions {
-  HTMLAttributes: Record<string, any>;
+  HTMLAttributes: Record<string, unknown>;
 }
 
-declare module '@tiptap/core' {
+declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     button: {
       /**
        * Set a blockquote node
        */
-      setButton: (attributes: {href: string; color: colors}) => ReturnType;
+      setButton: (attributes: { href: string; color: colors }) => ReturnType;
       /**
        * Toggle a blockquote node
        */
-      toggleButton: (attributes: {href: string; color: colors}) => ReturnType;
+      toggleButton: (attributes: { href: string; color: colors }) => ReturnType;
     };
   }
 }
@@ -37,16 +37,16 @@ declare module '@tiptap/core' {
 export const inputRegex = /^\s*>\s$/;
 
 export const Button = Node.create<ButtonOptions>({
-  name: 'button',
-  content: 'text*',
-  marks: '',
-  group: 'block',
+  name: "button",
+  content: "text*",
+  marks: "",
+  group: "block",
   defining: true,
 
   addOptions() {
     return {
       HTMLAttributes: {
-        class: 'btn',
+        class: "btn",
       },
     };
   },
@@ -57,7 +57,7 @@ export const Button = Node.create<ButtonOptions>({
         default: null,
       },
       color: {
-        default: 'blue' as colors,
+        default: "blue" as colors,
       },
     };
   },
@@ -65,15 +65,15 @@ export const Button = Node.create<ButtonOptions>({
   parseHTML() {
     return [
       {
-        tag: 'a.btn',
+        tag: "a.btn",
         priority: 51,
       },
     ];
   },
 
-  renderHTML({node, HTMLAttributes}) {
+  renderHTML({ node, HTMLAttributes }) {
     return [
-      'a',
+      "a",
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
         style: `color: white; background-color: ${
           colorMap[node.attrs.color as colors]
@@ -86,14 +86,14 @@ export const Button = Node.create<ButtonOptions>({
   addCommands() {
     return {
       setButton:
-        attributes =>
-        ({commands}) => {
+        (attributes) =>
+        ({ commands }) => {
           return commands.setNode(this.name, attributes);
         },
       toggleButton:
-        attributes =>
-        ({commands}) => {
-          return commands.toggleNode(this.name, 'paragraph', attributes);
+        (attributes) =>
+        ({ commands }) => {
+          return commands.toggleNode(this.name, "paragraph", attributes);
         },
     };
   },

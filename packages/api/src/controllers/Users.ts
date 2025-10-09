@@ -1,32 +1,40 @@
-import { Controller, Get, Middleware } from "@overnightjs/core";
-import type { Request, Response } from "express";
+import { createRoute } from "@hono/zod-openapi";
+import { UserPersistence } from "@plunk/lib";
+import { UserSchemas } from "@plunk/shared";
+import type { AppType } from "../app";
 import { NotAuthenticated } from "../exceptions";
-import { type IJwt, isAuthenticated } from "../middleware/auth";
-import { UserService } from "../services/UserService";
+import { isAuthenticatedUser } from "../middleware/auth";
 
-@Controller("users")
-export class Users {
-	@Get("@me")
-	@Middleware([isAuthenticated])
-	public async me(req: Request, res: Response) {
-		const auth = res.locals.auth as IJwt;
+export function registerUserRoutes(app: AppType) {
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/@me",
+      request: {},
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: UserSchemas.get,
+            },
+          },
+          description: "Retrieve the user",
+        },
+      },
+      middleware: [isAuthenticatedUser],
+    }),
 
-		const me = await UserService.id(auth.userId);
+    async (c) => {
+      const auth = c.get("auth");
 
-		if (!me) {
-			throw new NotAuthenticated();
-		}
+      const userPersistence = new UserPersistence();
+      const me = await userPersistence.get(auth.sub);
 
-		return res.status(200).json({ id: me.id, email: me.email });
-	}
+      if (!me) {
+        throw new NotAuthenticated();
+      }
 
-	@Get("@me/projects")
-	@Middleware([isAuthenticated])
-	public async meProjects(req: Request, res: Response) {
-		const auth = res.locals.auth as IJwt;
-
-		const projects = await UserService.projects(auth.userId);
-
-		return res.status(200).json(projects);
-	}
+      return c.json(UserSchemas.get.parse(me));
+    },
+  );
 }

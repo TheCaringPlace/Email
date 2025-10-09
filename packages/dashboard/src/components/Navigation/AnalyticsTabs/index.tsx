@@ -1,1 +1,1 @@
-export {default as AnalyticsTabs} from './AnalyticsTabs';
+export { default as AnalyticsTabs } from "./AnalyticsTabs";

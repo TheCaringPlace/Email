@@ -8,22 +8,20 @@ import { network } from "../../lib/network";
  *
  */
 export default function Index() {
-	const router = useRouter();
+  const router = useRouter();
 
-	const { error, mutate } = useUser();
+  const { error, mutate } = useUser();
 
-	if (error) {
-		void router.push("/");
-	}
+  if (error) {
+    void router.push("/");
+  }
 
-	useEffect(() => {
-		void network.fetch<boolean>("GET", "/auth/logout").then(async (success) => {
-			if (success) {
-				await mutate(null);
-				await router.push("/");
-			}
-		});
-	}, [mutate, router.push]);
+  useEffect(() => {
+    void network.fetch("/auth/logout", { method: "POST" }).then(async () => {
+      await mutate(undefined);
+      await router.push("/");
+    });
+  }, [mutate, router.push]);
 
-	return <FullscreenLoader />;
+  return <FullscreenLoader />;
 }

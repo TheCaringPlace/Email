@@ -1,15 +1,6 @@
-version: '3'
+
 services:
   db:
-    image: postgres
+    image: amazon/dynamodb-local
     ports:
-      - 55432:5432
-    environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_DB: postgres
-
-  redis:
-    image: redis
-    ports:
-      - 56379:6379
+      - 8000:8000

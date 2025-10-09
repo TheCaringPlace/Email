@@ -1,6 +1,6 @@
-import useSWR from 'swr';
-import {Event} from '@prisma/client';
-import {useActiveProject} from './projects';
+import type { Event, Trigger } from "@plunk/shared";
+import useSWR from "swr";
+import { useActiveProject } from "./projects";
 
 /**
  *
@@ -8,22 +8,11 @@ import {useActiveProject} from './projects';
 export function useEvents() {
   const activeProject = useActiveProject();
 
-  return useSWR<
-    (Event & {
-      triggers: {
-        id: string;
-        createdAt: Date;
-        contactId: string;
-      }[];
-    })[]
-  >(activeProject ? `/projects/id/${activeProject.id}/events` : null);
+  return useSWR<Event[]>(activeProject ? `/projects/${activeProject.id}/events/all` : null);
 }
 
-/**
- *
- */
-export function useEventsWithoutTriggers() {
+export function useEventsWithTriggers() {
   const activeProject = useActiveProject();
 
-  return useSWR<Event[]>(activeProject ? `/projects/id/${activeProject.id}/events?triggers=false` : null);
+  return useSWR<(Event & { triggers: Trigger[] })[]>(activeProject ? `/projects/${activeProject.id}/events/all?embed=triggers` : null);
 }

@@ -1,108 +1,99 @@
-import "dotenv/config";
-import "express-async-errors";
+import { randomUUID } from "node:crypto";
+import { OpenAPIHono } from "@hono/zod-openapi";
+import { rootLogger, setRequestInfo } from "@plunk/lib";
+import type { Context, Next } from "hono";
+import { handle } from "hono/aws-lambda";
+import { bodyLimit } from "hono/body-limit";
+import { compress } from "hono/compress";
+import { cors } from "hono/cors";
+import { createMiddleware } from "hono/factory";
+import { pinoLogger } from "hono-pino";
+import { registerAuthRoutes } from "./controllers/Auth";
+import { registerHealthRoutes } from "./controllers/Health";
+import { registerMembershipsRoutes } from "./controllers/Memberships";
+import { registerProjectRoutes } from "./controllers/Projects";
+import { registerSubscriberRoutes } from "./controllers/Subscriber";
+import { registerUserRoutes } from "./controllers/Users";
+import { sendProblem } from "./exceptions/responses";
+import { errorWrapper } from "./middleware/error";
+import type { Auth } from "./services/AuthService";
 
-import { STATUS_CODES } from "node:http";
-import { Server } from "@overnightjs/core";
-import compression from "compression";
-import cookies from "cookie-parser";
-import cors from "cors";
-import { type NextFunction, type Request, type Response, json } from "express";
-import helmet from "helmet";
-import morgan from "morgan";
-import signale from "signale";
-import { APP_URI, NODE_ENV } from "./app/constants";
-import { task } from "./app/cron";
-import { Auth } from "./controllers/Auth";
-import { Identities } from "./controllers/Identities";
-import { Memberships } from "./controllers/Memberships";
-import { Projects } from "./controllers/Projects";
-import { Tasks } from "./controllers/Tasks";
-import { Users } from "./controllers/Users";
-import { Webhooks } from "./controllers/Webhooks";
-import { V1 } from "./controllers/v1";
-import { prisma } from "./database/prisma";
-import { HttpException } from "./exceptions";
-import { Health } from "./controllers/Health";
+export type AppType = OpenAPIHono<{
+  Variables: {
+    auth: Auth;
+  };
+}>;
 
-const server = new (class extends Server {
-	public constructor() {
-		super();
-
-		// Set the content-type to JSON for any request coming from AWS SNS
-		this.app.use((req, res, next) => {
-			if (req.get("x-amz-sns-message-type")) {
-				req.headers["content-type"] = "application/json";
-			}
-			next();
-		});
-
-		this.app.use(
-			compression({
-				threshold: 0,
-			}),
-		);
-
-		// Parse the rest of our application as json
-		this.app.use(json({ limit: "50mb" }));
-		this.app.use(cookies());
-		this.app.use(helmet());
-
-		this.app.use(["/v1", "/v1/track", "/v1/send"], (req, res, next) => {
-			res.set({ "Access-Control-Allow-Origin": "*" });
-			next();
-		});
-
-		this.app.use(
-			cors({
-				origin: [APP_URI],
-				credentials: true,
-			}),
-		);
-
-		this.app.use(morgan(NODE_ENV === "development" ? "dev" : "short"));
-
-		this.addControllers([
-			new Auth(),
-			new Users(),
-			new Projects(),
-			new Memberships(),
-			new Webhooks(),
-			new Identities(),
-			new Tasks(),
-			new V1(),
-			new Health(),
-		]);
-
-		this.app.use("*", () => {
-			throw new HttpException(404, "Unknown route");
-		});
-	}
-})();
-
-server.app.use((req, res, next) => {
-	console.log(`Incoming request: ${req.method} ${req.path}`);
-	next();
+export const app = new OpenAPIHono<{
+  Variables: {
+    auth: Auth;
+  };
+}>({
+  defaultHook: (result, c) => {
+    if (!result.success) {
+      return sendProblem(c, result.error, 400);
+    }
+  },
 });
 
-server.app.use((error: Error, req: Request, res: Response, _next: NextFunction) => {
-	const code = error instanceof HttpException ? error.code : 500;
+app.onError((error, c) => {
+  rootLogger.error({ error, message: error.message }, "Error handling request");
+  return sendProblem(c, error);
+});
+app.use(
+  "*",
+  createMiddleware((c: Context, next: Next) => {
+    const requestId = c.req.header("x-request-id") ?? randomUUID();
+    const correlationId = c.req.header("x-correlation-id") ?? randomUUID();
+    const promise = new Promise<void>((resolve) =>
+      setRequestInfo({ requestId, correlationId }, async () => {
+        await next();
+        resolve();
+      }),
+    );
+    return promise;
+  }),
+);
+app.use(
+  pinoLogger({
+    pino: rootLogger.child({
+      service: "api",
+    }),
+  }),
+);
+app.use(
+  "*",
+  bodyLimit({
+    maxSize: 1024 * 1024 * 10,
+  }),
+);
+app.use("*", compress());
 
-	if (NODE_ENV !== "development") {
-		signale.error(error);
-	}
+app.use("*", errorWrapper);
 
-	res.status(code).json({
-		code,
-		error: STATUS_CODES[code],
-		message: error.message,
-		time: Date.now(),
-	});
+app.use(
+  "*",
+  cors({
+    origin: "*",
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  }),
+);
+
+registerUserRoutes(app);
+registerAuthRoutes(app);
+registerHealthRoutes(app);
+registerMembershipsRoutes(app);
+registerProjectRoutes(app);
+registerSubscriberRoutes(app);
+
+app.doc("/doc", {
+  openapi: "3.0.0",
+  info: {
+    version: "1.0.0",
+    title: "Plunk API",
+  },
 });
 
-void prisma.$connect().then(() => {
-	server.app.listen(4000, () => {
-		task.start();
-
-		signale.success("[HTTPS] Ready on", 4000);
-	});
-});
+export const handler = handle(app);

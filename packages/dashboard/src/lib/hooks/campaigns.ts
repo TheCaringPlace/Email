@@ -1,33 +1,20 @@
-import useSWR from 'swr';
-import {Campaign} from '@prisma/client';
-import {useActiveProject} from './projects';
+import type { Campaign, Email } from "@plunk/shared";
+import useSWR from "swr";
+import { useActiveProject } from "./projects";
 
 /**
  *
  * @param id
  */
 export function useCampaign(id: string) {
-  return useSWR(`/v1/campaigns/${id}`);
+  const activeProject = useActiveProject();
+  return useSWR<Campaign>(activeProject ? `/projects/${activeProject.id}/campaigns/${id}` : null);
 }
 
 /**
  *
  */
-export function useCampaigns() {
+export function useCampaignsWithEmails() {
   const activeProject = useActiveProject();
-
-  return useSWR<
-    (Campaign & {
-      emails: {
-        id: string;
-        status: string;
-      }[];
-      tasks: {
-        id: string;
-      }[];
-      recipients: {
-        id: string;
-      }[];
-    })[]
-  >(activeProject ? `/projects/id/${activeProject.id}/campaigns` : null);
+  return useSWR<(Campaign & { emails: Email[] })[]>(activeProject ? `/projects/${activeProject.id}/campaigns/all?embed=emails` : null);
 }

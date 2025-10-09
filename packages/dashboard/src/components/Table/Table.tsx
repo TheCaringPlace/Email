@@ -1,9 +1,8 @@
-import React from 'react';
+import type React from "react";
 
 export interface TableProps {
   values: {
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    [key: string]: string | number | boolean | Date | React.ReactNode | null;
+    [key: string]: string | number | boolean | React.ReactNode | null;
   }[];
 }
 
@@ -11,7 +10,7 @@ export interface TableProps {
  * @param root0
  * @param root0.values
  */
-export default function Table({values}: TableProps) {
+export default function Table({ values }: TableProps) {
   if (values.length === 0) {
     return <h1>No values provided</h1>;
   }
@@ -24,14 +23,9 @@ export default function Table({values}: TableProps) {
             <table className="min-w-full">
               <thead className="bg-neutral-50">
                 <tr>
-                  {Object.keys(values[0]).map(header => {
+                  {Object.keys(values[0]).map((header) => {
                     return (
-                      <th
-                        scope="col"
-                        className={`${
-                          typeof values[0][header] === 'boolean' ? 'text-center' : 'text-left'
-                        } px-6 py-3 text-xs font-medium text-neutral-800`}
-                      >
+                      <th scope="col" className={`${typeof values[0][header] === "boolean" ? "text-center" : "text-left"} px-6 py-3 text-xs font-medium text-neutral-800`}>
                         {header}
                       </th>
                     );
@@ -39,25 +33,19 @@ export default function Table({values}: TableProps) {
                 </tr>
               </thead>
               <tbody>
-                {values.map(row => {
+                {values.map((row) => {
                   return (
-                    <tr className={`border-t border-neutral-100 bg-white transition ease-in-out hover:bg-neutral-50`}>
-                      {Object.entries(row).map(value => {
+                    <tr className={"border-t border-neutral-100 bg-white transition ease-in-out hover:bg-neutral-50"}>
+                      {Object.entries(row).map((value) => {
                         if (value[1] === null || value[1] === undefined) {
-                          return (
-                            <td className="whitespace-nowrap px-6 py-4 text-sm text-neutral-500">Not specified</td>
-                          );
+                          return <td className="whitespace-nowrap px-6 py-4 text-sm text-neutral-500">Not specified</td>;
                         }
 
-                        if (typeof value[1] === 'boolean') {
+                        if (typeof value[1] === "boolean") {
                           return (
                             <td className="whitespace-nowrap px-6 py-4 text-sm text-neutral-500">
                               {value[1] ? (
-                                <svg
-                                  className={'mx-auto h-7 w-7 rounded-full bg-green-50 p-1 text-green-500'}
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                >
+                                <svg className={"mx-auto h-7 w-7 rounded-full bg-green-50 p-1 text-green-500"} fill="none" viewBox="0 0 24 24">
                                   <path
                                     stroke="currentColor"
                                     strokeLinecap="round"
@@ -67,35 +55,19 @@ export default function Table({values}: TableProps) {
                                   />
                                 </svg>
                               ) : (
-                                <svg
-                                  className={'mx-auto h-7 w-7 rounded-full bg-red-50 p-1 text-red-500'}
-                                  width="24"
-                                  height="24"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    stroke="currentColor"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="1.5"
-                                    d="M17.25 6.75L6.75 17.25"
-                                  />
-                                  <path
-                                    stroke="currentColor"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="1.5"
-                                    d="M6.75 6.75L17.25 17.25"
-                                  />
+                                <svg className={"mx-auto h-7 w-7 rounded-full bg-red-50 p-1 text-red-500"} width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17.25 6.75L6.75 17.25" />
+                                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6.75 6.75L17.25 17.25" />
                                 </svg>
                               )}
                             </td>
                           );
                         }
-
-                        // @ts-ignore
-                        return <td className="whitespace-nowrap px-6 py-4 text-sm text-neutral-500">{value[1]}</td>;
+                        return (
+                          <td className="whitespace-nowrap px-6 py-4 text-sm text-neutral-500" key={`${value[0]}-${value[1]}`}>
+                            {value[1]}
+                          </td>
+                        );
                       })}
                     </tr>
                   );

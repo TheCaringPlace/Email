@@ -1,0 +1,23 @@
+{
+	"name": "@plunk/subscribers",
+	"version": "1.0.0",
+	"main": "dist/index.js",
+	"private": true,
+	"scripts": {
+		"build": "tsc",
+		"lint": "biome check src",
+		"lint:fix": "biome check --write src",
+		"lint:fix:unsafe": "biome check --write src --unsafe",
+		"typecheck": "tsc --noEmit",
+		"clean": "rimraf dist"
+	},
+	"devDependencies": {
+		"@types/aws-lambda": "^8.10.155",
+		"ts-node-dev": "^2.0.0",
+		"typescript": "^5.5.3"
+	},
+	"dependencies": {
+		"@aws-sdk/client-sns": "^3.490.0",
+		"@plunk/lib": "1.0.0"
+	}
+}

@@ -1,5 +1,5 @@
-import React from 'react';
-import {Ghost} from 'lucide-react';
+import { Ghost } from "lucide-react";
+import type React from "react";
 
 export interface EmptyProps {
   title: string;
@@ -13,7 +13,7 @@ export interface EmptyProps {
  * @param root0.description
  * @param root0.icon
  */
-export default function Empty({title, description, icon}: EmptyProps) {
+export default function Empty({ title, description, icon }: EmptyProps) {
   return (
     <div className="relative block w-full p-12 text-center">
       <svg
@@ -24,11 +24,7 @@ export default function Empty({title, description, icon}: EmptyProps) {
         viewBox="0 0 24 24"
         aria-hidden="true"
       >
-        {icon ?? (
-          <>
-            <Ghost />
-          </>
-        )}
+        {icon ?? <Ghost />}
       </svg>
       <span className="mt-2 block text-sm font-medium text-neutral-800">{title}</span>
       <span className="mt-1 block text-sm font-normal text-neutral-600">{description}</span>

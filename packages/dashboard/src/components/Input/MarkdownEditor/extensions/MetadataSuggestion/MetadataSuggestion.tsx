@@ -1,33 +1,33 @@
-import {mergeAttributes, Node} from '@tiptap/core';
-import {Node as ProseMirrorNode} from '@tiptap/pm/model';
-import {PluginKey} from '@tiptap/pm/state';
-import Suggestion, {SuggestionOptions} from '@tiptap/suggestion';
+import { mergeAttributes, Node } from "@tiptap/core";
+import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
+import { PluginKey } from "@tiptap/pm/state";
+import Suggestion, { type SuggestionOptions } from "@tiptap/suggestion";
 
 export interface MentionOptions {
-  HTMLAttributes: Record<string, any>;
-  renderLabel: (props: {options: MentionOptions; node: ProseMirrorNode}) => string;
-  suggestion: Omit<SuggestionOptions, 'editor'>;
+  HTMLAttributes: Record<string, unknown>;
+  renderLabel: (props: { options: MentionOptions; node: ProseMirrorNode }) => string;
+  suggestion: Omit<SuggestionOptions, "editor">;
 }
 
-export const MentionPluginKey = new PluginKey('mention');
+export const MentionPluginKey = new PluginKey("mention");
 
 export const Mention = Node.create<MentionOptions>({
-  name: 'mention',
+  name: "mention",
 
   addOptions() {
     return {
       HTMLAttributes: {},
-      renderLabel({options, node}) {
+      renderLabel({ options, node }) {
         return `${options.suggestion.char}${node.attrs.label ?? node.attrs.id}`;
       },
       suggestion: {
-        char: '{{',
+        char: "{{",
         pluginKey: MentionPluginKey,
-        command: ({editor, range, props}) => {
+        command: ({ editor, range, props }) => {
           // increase range.to by one when the next node is of type "text"
           // and starts with a space character
           const nodeAfter = editor.view.state.selection.$to.nodeAfter;
-          const overrideSpace = nodeAfter?.text?.startsWith(' ');
+          const overrideSpace = nodeAfter?.text?.startsWith(" ");
 
           if (overrideSpace) {
             range.to += 1;
@@ -37,7 +37,7 @@ export const Mention = Node.create<MentionOptions>({
 
           window.getSelection()?.collapseToEnd();
         },
-        allow: ({state, range}) => {
+        allow: ({ state, range }) => {
           const $from = state.doc.resolve(range.from);
           const type = state.schema.nodes[this.name];
           const allow = !!$from.parent.type.contentMatch.matchType(type);
@@ -48,7 +48,7 @@ export const Mention = Node.create<MentionOptions>({
     };
   },
 
-  group: 'inline',
+  group: "inline",
 
   inline: true,
 
@@ -60,28 +60,28 @@ export const Mention = Node.create<MentionOptions>({
     return {
       id: {
         default: null,
-        parseHTML: element => element.getAttribute('data-id'),
-        renderHTML: attributes => {
+        parseHTML: (element) => element.getAttribute("data-id"),
+        renderHTML: (attributes) => {
           if (!attributes.id) {
             return {};
           }
 
           return {
-            'data-id': attributes.id,
+            "data-id": attributes.id,
           };
         },
       },
 
       label: {
         default: null,
-        parseHTML: element => element.getAttribute('data-label'),
-        renderHTML: attributes => {
+        parseHTML: (element) => element.getAttribute("data-label"),
+        renderHTML: (attributes) => {
           if (!attributes.label) {
             return {};
           }
 
           return {
-            'data-label': attributes.label,
+            "data-label": attributes.label,
           };
         },
       },
@@ -96,10 +96,10 @@ export const Mention = Node.create<MentionOptions>({
     ];
   },
 
-  renderHTML({node, HTMLAttributes}) {
+  renderHTML({ node, HTMLAttributes }) {
     return [
-      'span',
-      mergeAttributes({'data-type': this.name}, this.options.HTMLAttributes, HTMLAttributes),
+      "span",
+      mergeAttributes({ "data-type": this.name }, this.options.HTMLAttributes, HTMLAttributes),
       this.options.renderLabel({
         options: this.options,
         node,
@@ -107,7 +107,7 @@ export const Mention = Node.create<MentionOptions>({
     ];
   },
 
-  renderText({node}) {
+  renderText({ node }) {
     return this.options.renderLabel({
       options: this.options,
       node,
@@ -117,10 +117,10 @@ export const Mention = Node.create<MentionOptions>({
   addKeyboardShortcuts() {
     return {
       Backspace: () =>
-        this.editor.commands.command(({tr, state}) => {
+        this.editor.commands.command(({ tr, state }) => {
           let isMention = false;
-          const {selection} = state;
-          const {empty, anchor} = selection;
+          const { selection } = state;
+          const { empty, anchor } = selection;
 
           if (!empty) {
             return false;
@@ -129,7 +129,7 @@ export const Mention = Node.create<MentionOptions>({
           state.doc.nodesBetween(anchor - 1, anchor, (node, pos) => {
             if (node.type.name === this.name) {
               isMention = true;
-              tr.insertText(this.options.suggestion.char ?? '', pos, pos + node.nodeSize);
+              tr.insertText(this.options.suggestion.char ?? "", pos, pos + node.nodeSize);
 
               return false;
             }
