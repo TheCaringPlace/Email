@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ActionSchemas, type ActionUpdate } from "@sendra/shared";
 import dayjs from "dayjs";
 import { AnimatePresence, motion } from "framer-motion";
-import { Save } from "lucide-react";
+import { Save, Trash } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -15,7 +15,6 @@ import { useEvents } from "../../lib/hooks/events";
 import { useActiveProject } from "../../lib/hooks/projects";
 import { useTemplates } from "../../lib/hooks/templates";
 import { network } from "../../lib/network";
-import {Trash} from "lucide-react";
 
 /**
  *

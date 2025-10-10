@@ -1,23 +1,23 @@
 // @ts-nocheck
 // React Hook Form messes up our types, ignore the entire file
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { Email } from "@sendra/shared";
 import { EventSchemas } from "@sendra/shared";
 import dayjs from "dayjs";
 import DOMPurify from "dompurify";
 import { motion } from "framer-motion";
+import { Trash } from "lucide-react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Badge, Card, ContactForm, Empty, FullscreenLoader, Input, Modal } from "../../components";
+import Trigger from "../../icons/Trigger";
 import { Dashboard } from "../../layouts";
 import { useContact } from "../../lib/hooks/contacts";
 import { useActiveProject } from "../../lib/hooks/projects";
 import { network } from "../../lib/network";
-import {Trash} from "lucide-react";
-import Trigger from "../../icons/Trigger";
-import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function Index() {
   const router = useRouter();
@@ -25,7 +25,6 @@ export default function Index() {
   const [eventModal, setEventModal] = useState(false);
   const project = useActiveProject();
   const { data: contact, mutate } = useContact(router.query.id as string);
-
 
   const {
     register: eventRegister,
@@ -35,7 +34,6 @@ export default function Index() {
   } = useForm<EventValues>({
     resolver: zodResolver(EventSchemas.track.pick({ event: true })),
   });
-
 
   if (!contact || !router.isReady) {
     return <FullscreenLoader />;
@@ -94,9 +92,7 @@ export default function Index() {
         action={"Trigger"}
         title={"Trigger event"}
         description={`Trigger an event for ${contact.email}`}
-        icon={
-          <Trigger />
-        }
+        icon={<Trigger />}
       >
         <Input register={eventRegister("event")} label={"Event"} placeholder={"signup"} error={eventErrors.event} />
       </Modal>
@@ -330,9 +326,9 @@ export default function Index() {
                                   <p className="text-sm text-neutral-500">
                                     {t.event.template || t.event.campaign
                                       ? `${t.event.name.charAt(0).toUpperCase()}${t.event.name
-                                        .replaceAll("-", " ")
-                                        .slice(1)
-                                        .replace(/(delivered|opened)$/, "")}`
+                                          .replaceAll("-", " ")
+                                          .slice(1)
+                                          .replace(/(delivered|opened)$/, "")}`
                                       : t.event.name}{" "}
                                     {t.event.template
                                       ? t.event.name.endsWith("delivered")

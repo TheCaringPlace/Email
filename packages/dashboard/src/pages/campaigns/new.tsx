@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CampaignSchemas } from "@sendra/shared";
 import type { Campaign } from "@sendra/shared";
+import { CampaignSchemas } from "@sendra/shared";
 import { Ring } from "@uiball/loaders";
 import dayjs from "dayjs";
 import { AnimatePresence, motion } from "framer-motion";
@@ -9,7 +9,7 @@ import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { type FieldError, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Alert, Card, Dropdown, Editor, FullscreenLoader, Input, MultiselectDropdown, MetadataFilterEditor, MetadataFilterGroupType } from "../../components";
+import { Alert, Card, Dropdown, Editor, FullscreenLoader, Input, MetadataFilterEditor, type MetadataFilterGroupType, MultiselectDropdown } from "../../components";
 import { Dashboard } from "../../layouts";
 import { useCampaignsWithEmails } from "../../lib/hooks/campaigns";
 import { useAllContacts, useAllContactsWithTriggers, useContactsWithTriggers } from "../../lib/hooks/contacts";
@@ -34,7 +34,6 @@ const templates = {
   },
 };
 
-
 /**
  *
  */
@@ -54,7 +53,6 @@ export default function Index() {
     metadataFilter?: MetadataFilterGroupType;
   }>({});
   const [advancedSelector, setSelector] = useState(false);
-
 
   const filteredContacts = useFilterContacts(contacts ?? [], query);
 
@@ -96,18 +94,13 @@ export default function Index() {
 
   const create = async (data: CampaignValues) => {
     toast.promise(
-      network.fetch(
-        `/projects/${project.id}/campaigns`,
-        {
-          method: "POST",
-          body: {
-            ...data,
-            recipients: data.recipients.length === contacts?.filter((c) => c.subscribed).length
-              ? ["all"]
-              : data.recipients,
-          },
-        }
-      ),
+      network.fetch(`/projects/${project.id}/campaigns`, {
+        method: "POST",
+        body: {
+          ...data,
+          recipients: data.recipients.length === contacts?.filter((c) => c.subscribed).length ? ["all"] : data.recipients,
+        },
+      }),
       {
         loading: "Creating new campaign",
         success: () => {
@@ -127,33 +120,11 @@ export default function Index() {
         <Card title={"Create a new campaign"}>
           <form onSubmit={handleSubmit(create)} className="space-y-6 sm:grid sm:grid-cols-6 sm:gap-6">
             <div className={"sm:col-span-6 sm:grid sm:grid-cols-6 sm:gap-6 space-y-6 sm:space-y-0"}>
-              <Input
-                className={"sm:col-span-6"}
-                label={"Subject"}
-                placeholder={`Welcome to ${project.name}!`}
-                register={register("subject")}
-                error={errors.subject}
-              />
+              <Input className={"sm:col-span-6"} label={"Subject"} placeholder={`Welcome to ${project.name}!`} register={register("subject")} error={errors.subject} />
 
-              {project.verified && (
-                <Input
-                  className={"sm:col-span-3"}
-                  label={"Sender Email"}
-                  placeholder={`${project.email}`}
-                  register={register("email")}
-                  error={errors.email}
-                />
-              )}
+              {project.verified && <Input className={"sm:col-span-3"} label={"Sender Email"} placeholder={`${project.email}`} register={register("email")} error={errors.email} />}
 
-              {project.verified && (
-                <Input
-                  className={"sm:col-span-3"}
-                  label={"Sender Name"}
-                  placeholder={`${project.from ?? project.name}`}
-                  register={register("from")}
-                  error={errors.from}
-                />
-              )}
+              {project.verified && <Input className={"sm:col-span-3"} label={"Sender Name"} placeholder={`${project.from ?? project.name}`} register={register("from")} error={errors.from} />}
             </div>
 
             {contacts ? (
@@ -173,12 +144,7 @@ export default function Index() {
                   />
                   <AnimatePresence>
                     {(errors.recipients as FieldError | undefined)?.message && (
-                      <motion.p
-                        initial={{ height: 0 }}
-                        animate={{ height: "auto" }}
-                        exit={{ height: 0 }}
-                        className="mt-1 text-xs text-red-500"
-                      >
+                      <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">
                         {(errors.recipients as FieldError | undefined)?.message}
                       </motion.p>
                     )}
@@ -227,9 +193,7 @@ export default function Index() {
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.2 }}
-                      className={
-                        "relative z-20 grid gap-6 rounded border border-neutral-300 px-6 py-6 sm:col-span-6 sm:grid-cols-4"
-                      }
+                      className={"relative z-20 grid gap-6 rounded border border-neutral-300 px-6 py-6 sm:col-span-6 sm:grid-cols-4"}
                     >
                       <div className={"sm:col-span-2"}>
                         <label htmlFor={"event"} className="block text-sm font-medium text-neutral-700">
@@ -241,10 +205,10 @@ export default function Index() {
                               e.length > 0
                                 ? { ...query, events: e }
                                 : {
-                                  ...query,
-                                  events: undefined,
-                                  last: undefined,
-                                },
+                                    ...query,
+                                    events: undefined,
+                                    last: undefined,
+                                  },
                             )
                           }
                           values={[
@@ -268,8 +232,7 @@ export default function Index() {
                                 return {
                                   name: e.name,
                                   value: e.id,
-                                  tag:
-                                    e.template ?? e.campaign ? (e.name.includes("opened") ? "On Open" : "On Delivery") : undefined,
+                                  tag: (e.template ?? e.campaign) ? (e.name.includes("opened") ? "On Open" : "On Delivery") : undefined,
                                 };
                               }),
                           ]}
@@ -312,10 +275,10 @@ export default function Index() {
                               e.length > 0
                                 ? { ...query, notevents: e }
                                 : {
-                                  ...query,
-                                  notevents: undefined,
-                                  notlast: undefined,
-                                },
+                                    ...query,
+                                    notevents: undefined,
+                                    notlast: undefined,
+                                  },
                             );
                           }}
                           values={[
@@ -339,8 +302,7 @@ export default function Index() {
                                 return {
                                   name: e.name,
                                   value: e.id,
-                                  tag:
-                                    e.template ?? e.campaign ? (e.name.includes("opened") ? "On Open" : "On Delivery") : undefined,
+                                  tag: (e.template ?? e.campaign) ? (e.name.includes("opened") ? "On Open" : "On Delivery") : undefined,
                                 };
                               }),
                           ]}
@@ -373,10 +335,7 @@ export default function Index() {
                         )}
                       </div>
 
-                      <MetadataFilterEditor
-                        onChange={(filter) => setQuery({ ...query, metadataFilter: filter })}
-                        contacts={contacts}
-                      />
+                      <MetadataFilterEditor onChange={(filter) => setQuery({ ...query, metadataFilter: filter })} contacts={contacts} />
 
                       <div className={"sm:col-span-4"}>
                         <motion.button
@@ -389,25 +348,11 @@ export default function Index() {
                           }}
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.9 }}
-                          className={
-                            "ml-auto flex items-center justify-center gap-x-0.5 rounded bg-neutral-800 px-8 py-2 text-center text-sm font-medium text-white"
-                          }
+                          className={"ml-auto flex items-center justify-center gap-x-0.5 rounded bg-neutral-800 px-8 py-2 text-center text-sm font-medium text-white"}
                         >
                           <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                            <path
-                              stroke="currentColor"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="1.5"
-                              d="M12 5.75V18.25"
-                            />
-                            <path
-                              stroke="currentColor"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="1.5"
-                              d="M18.25 12L5.75 12"
-                            />
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 5.75V18.25" />
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M18.25 12L5.75 12" />
                           </svg>
                           Select {filteredContacts.length} contacts
                         </motion.button>
@@ -422,10 +367,7 @@ export default function Index() {
                   <Ring size={20} />
                   <div>
                     <h1 className={"text-lg font-semibold text-neutral-800"}>Hang on!</h1>
-                    <p className={"text-sm text-neutral-600"}>
-                      We're still loading your contacts. This might take up to a minute. You can already start writing your
-                      campaign in the editor below.
-                    </p>
+                    <p className={"text-sm text-neutral-600"}>We're still loading your contacts. This might take up to a minute. You can already start writing your campaign in the editor below.</p>
                   </div>
                 </div>
               </>
@@ -433,12 +375,7 @@ export default function Index() {
 
             <AnimatePresence>
               {watch("recipients").length >= 10 && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className={"relative z-10 sm:col-span-6"}
-                >
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className={"relative z-10 sm:col-span-6"}>
                   <Alert type={"info"} title={"Automatic batching"}>
                     Your campaign will be sent out in batches of 80 recipients each. It will be delivered to all contacts{" "}
                     {dayjs().to(dayjs().add(Math.ceil(watch("recipients").length / 80), "minutes"))}
@@ -459,12 +396,7 @@ export default function Index() {
               />
               <AnimatePresence>
                 {errors.body?.message && (
-                  <motion.p
-                    initial={{ height: 0 }}
-                    animate={{ height: "auto" }}
-                    exit={{ height: 0 }}
-                    className="mt-1 text-xs text-red-500"
-                  >
+                  <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">
                     {errors.body.message}
                   </motion.p>
                 )}
@@ -489,25 +421,11 @@ export default function Index() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.9 }}
-                className={
-                  "flex items-center gap-x-0.5 rounded bg-neutral-800 px-8 py-2 text-center text-sm font-medium text-white"
-                }
+                className={"flex items-center gap-x-0.5 rounded bg-neutral-800 px-8 py-2 text-center text-sm font-medium text-white"}
               >
                 <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                    d="M12 5.75V18.25"
-                  />
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                    d="M18.25 12L5.75 12"
-                  />
+                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 5.75V18.25" />
+                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M18.25 12L5.75 12" />
                 </svg>
                 Create
               </motion.button>

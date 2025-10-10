@@ -75,10 +75,7 @@ export const registerProjectInfoRoutes = (app: AppType) => {
         .toDate();
 
       // Get all contacts and emails for the project
-      const [allContacts, allEmails] = await Promise.all([
-        new ContactPersistence(projectId).listAll(),
-        new EmailPersistence(projectId).listAll(),
-      ]);
+      const [allContacts, allEmails] = await Promise.all([new ContactPersistence(projectId).listAll(), new EmailPersistence(projectId).listAll()]);
 
       // Basic contact analytics
       const subscribed = allContacts.filter((c) => c.subscribed).length;

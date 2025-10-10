@@ -14,7 +14,6 @@ export default function Index() {
 
   return (
     <Dashboard>
-
       <Card
         title={"Templates"}
         description={"Reusable blueprints of your emails"}

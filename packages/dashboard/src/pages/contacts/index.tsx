@@ -1,4 +1,4 @@
-import { type Contact, type Trigger } from "@sendra/shared";
+import type { Contact, Trigger } from "@sendra/shared";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
 import { Edit2, Plus } from "lucide-react";
@@ -75,8 +75,8 @@ export default function Index() {
                     .to(
                       [...u.triggers, ...u.emails].length > 0
                         ? [...u.triggers, ...u.emails].sort((a, b) => {
-                          return a.createdAt > b.createdAt ? -1 : 1;
-                        })[0].createdAt
+                            return a.createdAt > b.createdAt ? -1 : 1;
+                          })[0].createdAt
                         : u.createdAt,
                     )
                     .toString(),
@@ -132,8 +132,8 @@ export default function Index() {
                       .to(
                         u.triggers.length > 0
                           ? u.triggers.sort((a, b) => {
-                            return a.createdAt > b.createdAt ? -1 : 1;
-                          })[0].createdAt
+                              return a.createdAt > b.createdAt ? -1 : 1;
+                            })[0].createdAt
                           : u.createdAt,
                       )
                       .toString(),
@@ -172,13 +172,8 @@ export default function Index() {
 
   return (
     <>
-      <Modal isOpen={contactModal} onToggle={() => setContactModal(s => !s)} onAction={() => {}} type={"info"} title={"Create new contact"} hideActionButtons={true}>
-        <ContactForm
-          projectId={project.id}
-          showEmailField={true}
-          submitButtonText="Create"
-          onSuccess={handleContactSuccess}
-        />
+      <Modal isOpen={contactModal} onToggle={() => setContactModal((s) => !s)} onAction={() => {}} type={"info"} title={"Create new contact"} hideActionButtons={true}>
+        <ContactForm projectId={project.id} showEmailField={true} submitButtonText="Create" onSuccess={handleContactSuccess} />
       </Modal>
       <Dashboard>
         <Card

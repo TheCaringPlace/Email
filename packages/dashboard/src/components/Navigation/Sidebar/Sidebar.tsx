@@ -3,8 +3,8 @@ import { Home, LayoutTemplate, LineChart, LogOut, Send, Settings, TerminalSquare
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { type ReactElement, useState } from "react";
-import { ProjectSelector } from "../../index";
 import SendraLogo from "../../../icons/SendraLogo";
+import { ProjectSelector } from "../../index";
 
 interface SidebarLinkType {
   to: string;
@@ -220,7 +220,7 @@ export default function Sidebar({ mobileOpen, onSidebarVisibilityChange }: Sideb
           <div className="flex h-0 flex-1 flex-col border-r border-neutral-100 bg-white px-6">
             <div className="flex flex-1 flex-col overflow-y-auto pb-4 pt-5">
               <div className="flex flex-shrink-0 items-center justify-center px-4">
-                <Link href={"/"} passHref >
+                <Link href={"/"} passHref>
                   <SendraLogo width="100%" />
                 </Link>
               </div>

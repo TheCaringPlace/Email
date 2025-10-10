@@ -104,7 +104,6 @@ export default function Index() {
       </Modal>
 
       <Dashboard>
-
         <Card
           title={"Events"}
           description={"View the events your application has sent to Sendra"}

@@ -20,7 +20,6 @@ export default function Index() {
 
   return (
     <Dashboard>
-
       <Card
         title={"Actions"}
         description={"Repeatable automations that can be triggered by your applications"}

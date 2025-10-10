@@ -1,19 +1,15 @@
-import { useFieldArray, useForm } from "react-hook-form";
-import { ContactCreate } from "@sendra/shared";
+import type { ContactCreate } from "@sendra/shared";
 import { Plus, Trash } from "lucide-react";
+import { useFieldArray, useForm } from "react-hook-form";
 
 export type ContactMetadataFormProps = {
   initialData?: ContactCreate["data"];
   onDataChange?: (data: ContactCreate["data"]) => void;
   className?: string;
-}
+};
 
 export function ContactMetadataForm({ initialData = {}, onDataChange, className = "" }: ContactMetadataFormProps) {
-  const {
-    register,
-    control,
-    watch,
-  } = useForm({
+  const { register, control, watch } = useForm({
     defaultValues: {
       data: Object.entries(initialData).map(([key, value]) => ({
         value: { key, value },
@@ -22,18 +18,20 @@ export function ContactMetadataForm({ initialData = {}, onDataChange, className 
   });
 
   watch((data) => {
-    const formattedData = data.data?.reduce((acc, field) => {
-      if (field?.value?.key && field?.value?.value) {
-        acc[field.value.key] = field.value.value as string | number | boolean | string[] | null;
-      }
-      return acc;
-    }, {} as ContactCreate["data"]);
-    
+    const formattedData = data.data?.reduce(
+      (acc, field) => {
+        if (field?.value?.key && field?.value?.value) {
+          acc[field.value.key] = field.value.value as string | number | boolean | string[] | null;
+        }
+        return acc;
+      },
+      {} as ContactCreate["data"],
+    );
+
     onDataChange?.(formattedData ?? {});
   });
 
   const { fields, append: fieldAppend, remove: fieldRemove } = useFieldArray({ control, name: "data" });
-
 
   return (
     <div className={className}>

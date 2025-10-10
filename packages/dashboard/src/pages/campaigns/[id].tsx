@@ -10,20 +10,8 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { type FieldError, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import {
-  Alert,
-  Badge,
-  Card,
-  Dropdown,
-  Editor,
-  FullscreenLoader,
-  Input,
-  MetadataFilterEditor,
-  MetadataFilterGroupType,
-  Modal,
-  MultiselectDropdown,
-  Table
-} from "../../components";
+import { Alert, Badge, Card, Dropdown, Editor, FullscreenLoader, Input, MetadataFilterEditor, type MetadataFilterGroupType, Modal, MultiselectDropdown, Table } from "../../components";
+import Send from "../../icons/Send";
 import { Dashboard } from "../../layouts";
 import { useCampaign, useCampaignsWithEmails } from "../../lib/hooks/campaigns";
 import { useAllContactsWithTriggers } from "../../lib/hooks/contacts";
@@ -32,8 +20,6 @@ import { useEvents } from "../../lib/hooks/events";
 import { useActiveProject } from "../../lib/hooks/projects";
 import { network } from "../../lib/network";
 import useFilterContacts from "./filter";
-import Send from "../../icons/Send";
-
 
 /**
  *
@@ -109,39 +95,31 @@ export default function Index() {
     return <FullscreenLoader />;
   }
 
-
-
   const send = async (data: Omit<CampaignUpdate, "id">) => {
     setConfirmModal(false);
 
     toast.success("Saved your campaign. Starting delivery now, please hold on!");
 
-    await network.fetch(
-      `/projects/${project.id}/campaigns`,
-      {
-        method: "PUT",
-        body: data.recipients.length === contacts?.filter((c) => c.subscribed).length
+    await network.fetch(`/projects/${project.id}/campaigns`, {
+      method: "PUT",
+      body:
+        data.recipients.length === contacts?.filter((c) => c.subscribed).length
           ? { id: campaign.id, ...data, recipients: ["all"] }
           : {
-            id: campaign.id,
-            ...data,
-          },
-      }
-    );
-
+              id: campaign.id,
+              ...data,
+            },
+    });
 
     toast.promise(
-      network.fetch(
-        `/projects/${project.id}/campaigns/${campaign.id}/send`,
-        {
-          method: "POST",
-          body: {
-            id: campaign.id,
-            live: true,
-            delay,
-          },
-        }
-      ),
+      network.fetch(`/projects/${project.id}/campaigns/${campaign.id}/send`, {
+        method: "POST",
+        body: {
+          id: campaign.id,
+          live: true,
+          delay,
+        },
+      }),
 
       {
         loading: "Starting delivery...",
@@ -159,27 +137,22 @@ export default function Index() {
   };
 
   const sendTest = async (data: Omit<CampaignUpdate, "id">) => {
-    await network.fetch(
-      `/projects/${project.id}/campaigns`,
-      {
-        method: "PUT",
-        body: {
-          id: campaign.id,
-          ...data,
-        },
-      }
-    );
+    await network.fetch(`/projects/${project.id}/campaigns`, {
+      method: "PUT",
+      body: {
+        id: campaign.id,
+        ...data,
+      },
+    });
 
     toast.promise(
-      network.fetch(
-        `/projects/${project.id}/campaigns/${campaign.id}/send`,
-        {
-          method: "POST",
-          body: {
-            live: false,
-            delay: 0,
-          },
-        }),
+      network.fetch(`/projects/${project.id}/campaigns/${campaign.id}/send`, {
+        method: "POST",
+        body: {
+          live: false,
+          delay: 0,
+        },
+      }),
       {
         loading: "Sending you a test campaign",
         success: "Sent all project members a test campaign",
@@ -190,16 +163,13 @@ export default function Index() {
 
   const update = (data: Omit<CampaignUpdate, "id">) => {
     toast.promise(
-      network.fetch(
-        `/projects/${project.id}/campaigns`,
-        {
-          method: "PUT",
-          body: {
-            id: campaign.id,
-            ...data,
-          },
-        }
-      ),
+      network.fetch(`/projects/${project.id}/campaigns`, {
+        method: "PUT",
+        body: {
+          id: campaign.id,
+          ...data,
+        },
+      }),
       {
         loading: "Saving your campaign",
         success: () => {
@@ -215,15 +185,12 @@ export default function Index() {
   const duplicate = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     toast.promise(
-      network.fetch(
-        `/projects/${project.id}/campaigns`,
-        {
-          method: "POST",
-          body: {
-            ...campaign,
-          },
-        }
-      ),
+      network.fetch(`/projects/${project.id}/campaigns`, {
+        method: "POST",
+        body: {
+          ...campaign,
+        },
+      }),
       {
         loading: "Duplicating your campaign",
         success: () => {
@@ -241,12 +208,9 @@ export default function Index() {
   const remove = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     toast.promise(
-      network.fetch(
-        `/projects/${project.id}/campaigns`,
-        {
-          method: "DELETE",
-        }
-      ),
+      network.fetch(`/projects/${project.id}/campaigns`, {
+        method: "DELETE",
+      }),
       {
         loading: "Deleting your campaign",
         success: () => {
@@ -305,12 +269,7 @@ export default function Index() {
           title={campaign.status !== "DRAFT" ? "View campaign" : "Update campaign"}
           options={
             <>
-              <button
-                onClick={duplicate}
-                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-neutral-700 transition hover:bg-neutral-100"
-                role="menuitem"
-                tabIndex={-1}
-              >
+              <button onClick={duplicate} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-neutral-700 transition hover:bg-neutral-100" role="menuitem" tabIndex={-1}>
                 <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
                   <path
                     stroke="currentColor"
@@ -319,26 +278,11 @@ export default function Index() {
                     strokeWidth="1.5"
                     d="M6.5 15.25V15.25C5.5335 15.25 4.75 14.4665 4.75 13.5V6.75C4.75 5.64543 5.64543 4.75 6.75 4.75H13.5C14.4665 4.75 15.25 5.5335 15.25 6.5V6.5"
                   />
-                  <rect
-                    width="10.5"
-                    height="10.5"
-                    x="8.75"
-                    y="8.75"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                    rx="2"
-                  />
+                  <rect width="10.5" height="10.5" x="8.75" y="8.75" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" rx="2" />
                 </svg>
                 Duplicate
               </button>
-              <button
-                onClick={remove}
-                className="flex w-full items-center gap-2 px-4 py-2 text-sm text-neutral-700 transition hover:bg-neutral-100"
-                role="menuitem"
-                tabIndex={-1}
-              >
+              <button onClick={remove} className="flex w-full items-center gap-2 px-4 py-2 text-sm text-neutral-700 transition hover:bg-neutral-100" role="menuitem" tabIndex={-1}>
                 <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
                   <path
                     stroke="currentColor"
@@ -363,33 +307,11 @@ export default function Index() {
         >
           <form onSubmit={handleSubmit(update)} className="space-y-6 sm:space-y-0 sm:space-6 sm:grid sm:gap-6 sm:grid-cols-6">
             <div className={"sm:col-span-6 grid sm:grid-cols-6 gap-6"}>
-              <Input
-                className={"sm:col-span-6"}
-                label={"Subject"}
-                placeholder={`Welcome to ${project.name}!`}
-                register={register("subject")}
-                error={errors.subject}
-              />
+              <Input className={"sm:col-span-6"} label={"Subject"} placeholder={`Welcome to ${project.name}!`} register={register("subject")} error={errors.subject} />
 
-              {project.verified && (
-                <Input
-                  className={"sm:col-span-3"}
-                  label={"Sender Email"}
-                  placeholder={`${project.email}`}
-                  register={register("email")}
-                  error={errors.email}
-                />
-              )}
+              {project.verified && <Input className={"sm:col-span-3"} label={"Sender Email"} placeholder={`${project.email}`} register={register("email")} error={errors.email} />}
 
-              {project.verified && (
-                <Input
-                  className={"sm:col-span-3"}
-                  label={"Sender Name"}
-                  placeholder={`${project.from ?? project.name}`}
-                  register={register("from")}
-                  error={errors.from}
-                />
-              )}
+              {project.verified && <Input className={"sm:col-span-3"} label={"Sender Name"} placeholder={`${project.from ?? project.name}`} register={register("from")} error={errors.from} />}
             </div>
 
             {contacts ? (
@@ -410,12 +332,7 @@ export default function Index() {
                   />
                   <AnimatePresence>
                     {(errors.recipients as FieldError | undefined)?.message && (
-                      <motion.p
-                        initial={{ height: 0 }}
-                        animate={{ height: "auto" }}
-                        exit={{ height: 0 }}
-                        className="mt-1 text-xs text-red-500"
-                      >
+                      <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">
                         {(errors.recipients as FieldError | undefined)?.message}
                       </motion.p>
                     )}
@@ -468,9 +385,7 @@ export default function Index() {
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.2 }}
-                      className={
-                        "relative z-20 grid gap-6 rounded border border-neutral-300 px-6 py-6 sm:col-span-6 sm:grid-cols-4"
-                      }
+                      className={"relative z-20 grid gap-6 rounded border border-neutral-300 px-6 py-6 sm:col-span-6 sm:grid-cols-4"}
                     >
                       <div className={"sm:col-span-2"}>
                         <label htmlFor={"event"} className="block text-sm font-medium text-neutral-700">
@@ -482,10 +397,10 @@ export default function Index() {
                               e.length > 0
                                 ? { ...query, events: e }
                                 : {
-                                  ...query,
-                                  events: undefined,
-                                  last: undefined,
-                                },
+                                    ...query,
+                                    events: undefined,
+                                    last: undefined,
+                                  },
                             )
                           }
                           values={[
@@ -509,8 +424,7 @@ export default function Index() {
                                 return {
                                   name: e.name,
                                   value: e.id,
-                                  tag:
-                                    e.template ?? e.campaign ? (e.name.includes("opened") ? "On Open" : "On Delivery") : undefined,
+                                  tag: (e.template ?? e.campaign) ? (e.name.includes("opened") ? "On Open" : "On Delivery") : undefined,
                                 };
                               }),
                           ]}
@@ -553,10 +467,10 @@ export default function Index() {
                               e.length > 0
                                 ? { ...query, notevents: e }
                                 : {
-                                  ...query,
-                                  notevents: undefined,
-                                  notlast: undefined,
-                                },
+                                    ...query,
+                                    notevents: undefined,
+                                    notlast: undefined,
+                                  },
                             );
                           }}
                           values={[
@@ -580,8 +494,7 @@ export default function Index() {
                                 return {
                                   name: e.name,
                                   value: e.id,
-                                  tag:
-                                    e.template ?? e.campaign ? (e.name.includes("opened") ? "On Open" : "On Delivery") : undefined,
+                                  tag: (e.template ?? e.campaign) ? (e.name.includes("opened") ? "On Open" : "On Delivery") : undefined,
                                 };
                               }),
                           ]}
@@ -614,10 +527,7 @@ export default function Index() {
                         )}
                       </div>
 
-                      <MetadataFilterEditor
-                        onChange={(filter) => setQuery({ ...query, metadataFilter: filter })}
-                        contacts={contacts}
-                      />
+                      <MetadataFilterEditor onChange={(filter) => setQuery({ ...query, metadataFilter: filter })} contacts={contacts} />
 
                       <div className={"sm:col-span-4"}>
                         <motion.button
@@ -630,25 +540,11 @@ export default function Index() {
                           }}
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.9 }}
-                          className={
-                            "ml-auto flex items-center justify-center gap-x-0.5 rounded bg-neutral-800 px-8 py-2 text-center text-sm font-medium text-white"
-                          }
+                          className={"ml-auto flex items-center justify-center gap-x-0.5 rounded bg-neutral-800 px-8 py-2 text-center text-sm font-medium text-white"}
                         >
                           <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                            <path
-                              stroke="currentColor"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="1.5"
-                              d="M12 5.75V18.25"
-                            />
-                            <path
-                              stroke="currentColor"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="1.5"
-                              d="M18.25 12L5.75 12"
-                            />
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 5.75V18.25" />
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M18.25 12L5.75 12" />
                           </svg>
                           Select {filteredContacts.length} contacts
                         </motion.button>
@@ -664,10 +560,7 @@ export default function Index() {
                     <Ring size={20} />
                     <div>
                       <h1 className={"text-lg font-semibold text-neutral-800"}>Hang on!</h1>
-                      <p className={"text-sm text-neutral-600"}>
-                        We're still loading your contacts. This might take up to a minute. You can already start writing your
-                        campaign in the editor below.
-                      </p>
+                      <p className={"text-sm text-neutral-600"}>We're still loading your contacts. This might take up to a minute. You can already start writing your campaign in the editor below.</p>
                     </div>
                   </div>
                 </>
@@ -676,12 +569,7 @@ export default function Index() {
 
             <AnimatePresence>
               {watch("recipients").length >= 10 && campaign.status !== "DELIVERED" && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className={"relative z-10 sm:col-span-6"}
-                >
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className={"relative z-10 sm:col-span-6"}>
                   <Alert type={"info"} title={"Automatic batching"}>
                     Your campaign will be sent out in batches of 80 recipients each. It will be delivered to all contacts{" "}
                     {dayjs().to(dayjs().add(Math.ceil(watch("recipients").length / 80), "minutes"))}
@@ -696,33 +584,25 @@ export default function Index() {
                   <Ring size={20} />
                   <div>
                     <h1 className={"text-lg font-semibold text-neutral-800"}>Hang on!</h1>
-                    <p className={"text-sm text-neutral-600"}>
-                      We are still sending your campaign. Emails will start appearing here once they are sent.
-                    </p>
+                    <p className={"text-sm text-neutral-600"}>We are still sending your campaign. Emails will start appearing here once they are sent.</p>
                   </div>
                 </div>
               ) : (
-                <div
-                  className={"max-h-[400px] overflow-x-hidden overflow-y-scroll rounded border border-neutral-200 sm:col-span-6"}
-                >
+                <div className={"max-h-[400px] overflow-x-hidden overflow-y-scroll rounded border border-neutral-200 sm:col-span-6"}>
                   <Table
-                    values={(emails ?? []).map(
-                      (e: Email) => {
-                        return {
-                          Email: e.email,
-                          Status: (
-                            <Badge type={e.status === "DELIVERED" ? "info" : e.status === "OPENED" ? "success" : "danger"}>
-                              {e.status.at(0)?.toUpperCase() + e.status.slice(1).toLowerCase()}
-                            </Badge>
-                          ),
-                          View: (
-                            <Link href={`/contacts/${e.contact}`}>
-                              <Eye size={20} />
-                            </Link>
-                          ),
-                        };
-                      },
-                    )}
+                    values={(emails ?? []).map((e: Email) => {
+                      return {
+                        Email: e.email,
+                        Status: (
+                          <Badge type={e.status === "DELIVERED" ? "info" : e.status === "OPENED" ? "success" : "danger"}>{e.status.at(0)?.toUpperCase() + e.status.slice(1).toLowerCase()}</Badge>
+                        ),
+                        View: (
+                          <Link href={`/contacts/${e.contact}`}>
+                            <Eye size={20} />
+                          </Link>
+                        ),
+                      };
+                    })}
                   />
                 </div>
               ))}
@@ -739,12 +619,7 @@ export default function Index() {
               />
               <AnimatePresence>
                 {errors.body?.message && (
-                  <motion.p
-                    initial={{ height: 0 }}
-                    animate={{ height: "auto" }}
-                    exit={{ height: 0 }}
-                    className="mt-1 text-xs text-red-500"
-                  >
+                  <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">
                     {errors.body.message}
                   </motion.p>
                 )}
@@ -758,9 +633,7 @@ export default function Index() {
                     onClick={handleSubmit(sendTest)}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.9 }}
-                    className={
-                      "ml-auto mt-6 flex items-center gap-x-0.5 rounded bg-neutral-800 px-6 py-2 text-center text-sm font-medium text-white"
-                    }
+                    className={"ml-auto mt-6 flex items-center gap-x-0.5 rounded bg-neutral-800 px-6 py-2 text-center text-sm font-medium text-white"}
                   >
                     <Send />
                     Send test to {project.name}'s members
@@ -772,9 +645,7 @@ export default function Index() {
                     }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.9 }}
-                    className={
-                      "ml-auto mt-6 flex items-center gap-x-0.5 rounded bg-neutral-800 px-6 py-2 text-center text-sm font-medium text-white"
-                    }
+                    className={"ml-auto mt-6 flex items-center gap-x-0.5 rounded bg-neutral-800 px-6 py-2 text-center text-sm font-medium text-white"}
                   >
                     <Send />
                     Save & Send
@@ -782,9 +653,7 @@ export default function Index() {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.9 }}
-                    className={
-                      "ml-auto mt-6 flex items-center gap-x-2 rounded bg-neutral-800 px-6 py-2 text-center text-sm font-medium text-white"
-                    }
+                    className={"ml-auto mt-6 flex items-center gap-x-2 rounded bg-neutral-800 px-6 py-2 text-center text-sm font-medium text-white"}
                   >
                     <Save strokeWidth={1.5} size={18} />
                     Save
@@ -797,4 +666,4 @@ export default function Index() {
       </Dashboard>
     </>
   );
-}   
+}

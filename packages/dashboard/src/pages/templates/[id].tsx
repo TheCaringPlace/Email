@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { TemplateUpdate } from "@sendra/shared";
 import { TemplateSchemas, type TemplateStyles } from "@sendra/shared";
 import { AnimatePresence, motion } from "framer-motion";
-import { Save } from "lucide-react";
+import { Save, Trash } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -12,7 +12,6 @@ import { Dashboard } from "../../layouts";
 import { useActiveProject } from "../../lib/hooks/projects";
 import { useTemplate, useTemplates } from "../../lib/hooks/templates";
 import { network } from "../../lib/network";
-import {Trash} from "lucide-react";
 
 /**
  *

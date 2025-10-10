@@ -1,10 +1,7 @@
-import {
-  type MetadataFilterType,
-  type MetadataFilterGroupType,
-} from "../../components";
-import { type Contact, type Trigger } from "@sendra/shared";
+import type { Contact, Trigger } from "@sendra/shared";
 import dayjs from "dayjs";
 import { useMemo } from "react";
+import type { MetadataFilterGroupType, MetadataFilterType } from "../../components";
 
 /**
  * Mapping of the filter conditions to the functions to use
@@ -29,8 +26,7 @@ function matchesMetadataFilter(contact: Contact, filter: MetadataFilterType) {
   if (!filter.field || !filter.condition) {
     return true;
   }
-  const value =
-    filter.field === "email" ? contact.email : contact.data[filter.field];
+  const value = filter.field === "email" ? contact.email : contact.data[filter.field];
 
   if (typeof filter.value === "undefined" && value === null) {
     return true;
@@ -49,19 +45,16 @@ function matchesMetadataFilter(contact: Contact, filter: MetadataFilterType) {
       return value === filter.value;
     case "is not":
       return value !== filter.value;
-    default:
-      if (
-        typeof (value as any)[functionMapping[filter.condition]] !== "function"
-      ) {
+    default: {
+      if (typeof (value as any)[functionMapping[filter.condition]] !== "function") {
         return false;
       }
-      const matches = (value as any)[functionMapping[filter.condition]](
-        filter.value
-      ) as boolean;
+      const matches = (value as any)[functionMapping[filter.condition]](filter.value) as boolean;
       if (filter.condition.includes("does not")) {
         return !matches;
       }
       return matches;
+    }
   }
 }
 
@@ -75,7 +68,7 @@ function filterContactsByMetadata(
   contacts: (Contact & {
     triggers: Trigger[];
   })[],
-  filter: MetadataFilterGroupType
+  filter: MetadataFilterGroupType,
 ) {
   return contacts.filter((contact) => {
     if (!filter.filters || !filter.filters.length) {
@@ -84,13 +77,9 @@ function filterContactsByMetadata(
 
     let matches = false;
     if (filter.combination !== "or") {
-      matches = filter.filters.every((filter) =>
-        matchesMetadataFilter(contact, filter)
-      );
+      matches = filter.filters.every((filter) => matchesMetadataFilter(contact, filter));
     } else {
-      matches = filter.filters.some((filter) =>
-        matchesMetadataFilter(contact, filter)
-      );
+      matches = filter.filters.some((filter) => matchesMetadataFilter(contact, filter));
     }
     return matches;
   });
@@ -112,7 +101,7 @@ export default function useFilterContacts(
     notevents?: string[];
     notlast?: "day" | "week" | "month";
     metadataFilter?: MetadataFilterGroupType;
-  }
+  },
 ) {
   return useMemo(() => {
     if (!contacts) {
@@ -123,9 +112,7 @@ export default function useFilterContacts(
 
     if (query.events && query.events.length > 0) {
       query.events.map((e) => {
-        filteredContacts = filteredContacts.filter((c) =>
-          c.triggers.some((t) => t.event === e)
-        );
+        filteredContacts = filteredContacts.filter((c) => c.triggers.some((t) => t.event === e));
       });
     }
 
@@ -135,17 +122,13 @@ export default function useFilterContacts(
           return false;
         }
 
-        const lastTrigger = c.triggers.sort((a, b) =>
-          a.createdAt > b.createdAt ? -1 : 1
-        );
+        const lastTrigger = c.triggers.sort((a, b) => (a.createdAt > b.createdAt ? -1 : 1));
 
         if (lastTrigger.length === 0) {
           return false;
         }
 
-        return dayjs(lastTrigger[0].createdAt).isAfter(
-          dayjs().subtract(1, query.last)
-        );
+        return dayjs(lastTrigger[0].createdAt).isAfter(dayjs().subtract(1, query.last));
       });
     }
 
@@ -156,24 +139,18 @@ export default function useFilterContacts(
             return true;
           }
 
-          const lastTrigger = c.triggers
-            .filter((t) => t.event === e)
-            .sort((a, b) => (a.createdAt > b.createdAt ? -1 : 1));
+          const lastTrigger = c.triggers.filter((t) => t.event === e).sort((a, b) => (a.createdAt > b.createdAt ? -1 : 1));
 
           if (lastTrigger.length === 0) {
             return true;
           }
 
-          return dayjs(lastTrigger[0].createdAt).isAfter(
-            dayjs().subtract(1, query.last)
-          );
+          return dayjs(lastTrigger[0].createdAt).isAfter(dayjs().subtract(1, query.last));
         });
       });
     } else if (query.notevents && query.notevents.length > 0) {
       query.notevents.map((e) => {
-        filteredContacts = filteredContacts.filter((c) =>
-          c.triggers.every((t) => t.event !== e)
-        );
+        filteredContacts = filteredContacts.filter((c) => c.triggers.every((t) => t.event !== e));
       });
     } else if (query.notlast) {
       filteredContacts = filteredContacts.filter((c) => {
@@ -181,25 +158,18 @@ export default function useFilterContacts(
           return true;
         }
 
-        const lastTrigger = c.triggers.sort((a, b) =>
-          a.createdAt > b.createdAt ? -1 : 1
-        );
+        const lastTrigger = c.triggers.sort((a, b) => (a.createdAt > b.createdAt ? -1 : 1));
 
         if (lastTrigger.length === 0) {
           return true;
         }
 
-        return !dayjs(lastTrigger[0].createdAt).isAfter(
-          dayjs().subtract(1, query.notlast)
-        );
+        return !dayjs(lastTrigger[0].createdAt).isAfter(dayjs().subtract(1, query.notlast));
       });
     }
 
     if (query.metadataFilter) {
-      filteredContacts = filterContactsByMetadata(
-        filteredContacts,
-        query.metadataFilter
-      );
+      filteredContacts = filterContactsByMetadata(filteredContacts, query.metadataFilter);
     }
 
     return filteredContacts;

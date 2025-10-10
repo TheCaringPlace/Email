@@ -1,9 +1,9 @@
+import type { ContactCreate } from "@sendra/shared";
 import { motion } from "framer-motion";
 import { Save } from "lucide-react";
 import { useState } from "react";
 import { ContactMetadataForm, Input, Toggle } from "../";
 import { useContactForm } from "./useContactForm";
-import { ContactCreate } from "@sendra/shared";
 
 export type ContactFormProps = {
   projectId: string;
@@ -13,28 +13,12 @@ export type ContactFormProps = {
   showEmailField?: boolean;
   submitButtonText?: string;
   className?: string;
-}
+};
 
-export function ContactForm({
-  projectId,
-  contactId,
-  onSuccess,
-  initialData,
-  showEmailField = true,
-  submitButtonText = "Save",
-  className = "",
-}: ContactFormProps) {
+export function ContactForm({ projectId, contactId, onSuccess, initialData, showEmailField = true, submitButtonText = "Save", className = "" }: ContactFormProps) {
   const [data, setData] = useState<ContactCreate["data"]>(initialData?.data ?? {});
 
-  const {
-    register,
-    handleSubmit,
-    errors,
-    watch,
-    setValue,
-    createContact,
-    updateContact,
-  } = useContactForm({
+  const { register, handleSubmit, errors, watch, setValue, createContact, updateContact } = useContactForm({
     projectId,
     contactId,
     onSuccess,
@@ -53,20 +37,12 @@ export function ContactForm({
     <form onSubmit={handleSubmit(onSubmit)} className={`space-y-6 sm:grid sm:gap-x-5 sm:space-y-9 sm:grid-cols-2 ${className}`}>
       {showEmailField && (
         <div className={"col-span-2"}>
-          <Input
-            register={register("email")}
-            label={"Email"}
-            placeholder={"hello@email.com"}
-            error={errors.email}
-          />
+          <Input register={register("email")} label={"Email"} placeholder={"hello@email.com"} error={errors.email} />
         </div>
       )}
 
       <div className={"col-span-2"}>
-        <ContactMetadataForm
-          initialData={initialData?.data || {}}
-          onDataChange={setData}
-        />
+        <ContactMetadataForm initialData={initialData?.data || {}} onDataChange={setData} />
       </div>
 
       <div className={"col-span-2"}>
@@ -77,7 +53,6 @@ export function ContactForm({
           onToggle={() => setValue("subscribed", !watch("subscribed"))}
         />
       </div>
-
 
       <div className={"col-span-2 ml-auto flex justify-end gap-x-5"}>
         <motion.button

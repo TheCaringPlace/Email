@@ -33,7 +33,6 @@ export class EmailService {
       contentType: string;
     }> | null;
   }) {
-
     const unsubscribeLink = `List-Unsubscribe: <https://${APP_URI}/subscription/?email=${to}>`;
 
     // Generate a unique boundary for multipart messages
