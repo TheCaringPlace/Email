@@ -1,10 +1,11 @@
 import { z } from "@hono/zod-openapi";
-import { rootLogger, UserPersistence } from "@sendra/lib";
+import { authConfig, rootLogger, UserPersistence } from "@sendra/lib";
 import { type User, UserSchemas } from "@sendra/shared";
 import type { Context, HonoRequest } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { type JwtPayload, sign, verify } from "jsonwebtoken";
-import { authConfig, JWT_SECRET } from "../app/constants";
+import type { StringValue } from "ms";
+import ms from "ms";
 import { Conflict, HttpException } from "../exceptions";
 import { createHash, verifyHash } from "../util/hash";
 
@@ -123,9 +124,9 @@ export class AuthService {
         type: "user",
         email,
       },
-      JWT_SECRET,
+      authConfig.jwtSecret,
       {
-        expiresIn: authConfig.ttl.user,
+        expiresIn: authConfig.ttl.user as number | StringValue,
         issuer: authConfig.issuer,
         subject: userId,
       },
@@ -137,9 +138,9 @@ export class AuthService {
       {
         type,
       },
-      JWT_SECRET,
+      authConfig.jwtSecret,
       {
-        expiresIn: authConfig.ttl[type],
+        expiresIn: authConfig.ttl[type] as number | StringValue,
         issuer: authConfig.issuer,
         subject: projectId,
         keyid: key,
@@ -159,7 +160,7 @@ export class AuthService {
     }
 
     try {
-      const verified = verify(token, JWT_SECRET);
+      const verified = verify(token, authConfig.jwtSecret);
       const auth = authSchema.parse(verified);
       if (type && auth.type !== type) {
         throw new HttpException(400, "Invalid authorization token for request");
@@ -193,9 +194,15 @@ export class AuthService {
 
   private static setUserToken(c: Context, userId: string, email: string): string {
     const token = AuthService.createUserToken(userId, email);
+    let expiresIn: number;
+    if (typeof authConfig.ttl.user === "number") {
+      expiresIn = authConfig.ttl.user & 1000;
+    } else {
+      expiresIn = ms(authConfig.ttl.user as StringValue);
+    }
     setCookie(c, authConfig.cookieName, token, {
       httpOnly: true,
-      expires: new Date(Date.now() + Number.parseInt(authConfig.ttl.user, 10) * 1000),
+      expires: new Date(Date.now() + expiresIn),
       secure: true,
       sameSite: "lax",
       path: "/",

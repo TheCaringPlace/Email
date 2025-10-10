@@ -14,3 +14,5 @@ build
 
 # sst
 .sst
+
+tsconfig.tsbuildinfo

@@ -1,9 +1,10 @@
 import { SES } from "@aws-sdk/client-ses";
 import mjml2html from "mjml";
+import { appSettings } from "./AppSettings";
 
 export const ses = new SES();
 
-const APP_URI = process.env.APP_URI as string;
+const APP_URI = appSettings.appUri;
 
 export class EmailService {
   public static async send({
@@ -79,7 +80,7 @@ ${EmailService.breakLongLines(attachment.content, 76, true)}
 
     const response = await ses.sendRawEmail({
       Destinations: to,
-      ConfigurationSetName: process.env.EMAIL_CONFIGURATION_SET_NAME,
+      ConfigurationSetName: appSettings.emailConfigurationSetName,
       RawMessage: {
         Data: new TextEncoder().encode(rawMessage),
       },

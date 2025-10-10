@@ -1,10 +1,11 @@
 import pino from "pino";
 import pinoPretty from "pino-pretty";
+import { logConfig } from "../services/AppSettings";
 import { getRequestInfo } from "./RequestInfo";
 
-const { LOG_LEVEL, LOG_PRETTY } = process.env;
+const { level, pretty } = logConfig;
 
-const stream = LOG_PRETTY
+const stream = pretty
   ? pinoPretty({
       levelFirst: true,
       colorize: true,
@@ -14,7 +15,7 @@ const stream = LOG_PRETTY
 const createLogger = () =>
   pino(
     {
-      level: LOG_LEVEL ?? "debug",
+      level,
       mixin: () => {
         const requestInfo = getRequestInfo();
         return {

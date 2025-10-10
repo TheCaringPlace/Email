@@ -1,4 +1,15 @@
-import { ActionPersistence, CampaignPersistence, ContactPersistence, EmailPersistence, EmailService, ProjectPersistence, rootLogger, TemplatePersistence, TriggerPersistence } from "@sendra/lib";
+import {
+  ActionPersistence,
+  appSettings,
+  CampaignPersistence,
+  ContactPersistence,
+  EmailPersistence,
+  EmailService,
+  ProjectPersistence,
+  rootLogger,
+  TemplatePersistence,
+  TriggerPersistence,
+} from "@sendra/lib";
 import type { Action, Campaign, SendEmailTaskSchema, Template } from "@sendra/shared";
 import type { z } from "zod";
 
@@ -75,7 +86,7 @@ export const sendEmail = async (task: SendEmailTask, recordId: string) => {
       return;
     }
 
-    email = project.verified && project.email ? (template.email ?? project.email) : (process.env.DEFAULT_EMAIL as string);
+    email = project.verified && project.email ? (template.email ?? project.email) : appSettings.defaultEmail;
     name = template.from ?? project.from ?? project.name;
 
     ({ subject, body } = EmailService.format({
@@ -88,7 +99,7 @@ export const sendEmail = async (task: SendEmailTask, recordId: string) => {
       },
     }));
   } else if (campaign) {
-    email = project.verified && project.email ? (campaign.email ?? project.email) : (process.env.DEFAULT_EMAIL as string);
+    email = project.verified && project.email ? (campaign.email ?? project.email) : appSettings.defaultEmail;
     name = campaign.from ?? project.from ?? project.name;
 
     ({ subject, body } = EmailService.format({

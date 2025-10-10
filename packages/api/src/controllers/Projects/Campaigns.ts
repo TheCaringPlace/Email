@@ -1,5 +1,6 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import {
+  appSettings,
   CampaignPersistence,
   ContactPersistence,
   EmailPersistence,
@@ -221,7 +222,7 @@ export const registerCampaignsRoutes = (app: AppType) => {
         await EmailService.send({
           from: {
             name: project.from ?? project.name,
-            email: project.verified && project.email ? project.email : (process.env.DEFAULT_EMAIL as string), // TODO: Add env variable to configure default email
+            email: project.verified && project.email ? project.email : appSettings.defaultEmail, // TODO: Add env variable to configure default email
           },
           to: users.map((m) => m.email),
           content: {
