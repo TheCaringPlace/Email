@@ -269,7 +269,6 @@ export const registerProjectEntityCrudRoutes = <T extends BaseItem>(app: AppType
         ...toCreate,
         project: projectId,
       } as Omit<T, "id" | "createdAt" | "updatedAt">);
-      // @ts-expect-error
       return c.json(entity, 201);
     },
   );
