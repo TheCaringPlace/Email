@@ -1,12 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { TemplateCreate } from "@sendra/shared";
-import { TemplateSchemas, type TemplateStyles } from "@sendra/shared";
+import { defaultTemplate, TemplateSchemas } from "@sendra/shared";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Card, Dropdown, Editor, FullscreenLoader, Input, Tooltip } from "../../components";
+import { Card, Dropdown, EmailEditor, FullscreenLoader, Input, Tooltip } from "../../components";
 import { Dashboard } from "../../layouts";
 import { useActiveProject } from "../../lib/hooks/projects";
 import { useTemplates } from "../../lib/hooks/templates";
@@ -33,9 +33,8 @@ export default function Index() {
     resolver: zodResolver(TemplateSchemas.create),
     defaultValues: {
       templateType: "MARKETING",
-      style: "SIMPLE",
       subject: "",
-      body: "",
+      body: defaultTemplate,
     },
   });
 
@@ -133,13 +132,10 @@ export default function Index() {
           {project.verified && <Input className={"sm:col-span-3"} label={"Sender Name"} placeholder={`${project.from ?? project.name}`} register={register("from")} error={errors.from} />}
 
           <div className={"sm:col-span-6"}>
-            <Editor
-              value={watch("body")}
-              mode={watch("style") as unknown as TemplateStyles}
-              modeSwitcher
-              onChange={(value, type) => {
+            <EmailEditor
+              initialValue={defaultTemplate}
+              onChange={(value) => {
                 setValue("body", value);
-                setValue("style", type ?? "SIMPLE");
               }}
             />
             <AnimatePresence>

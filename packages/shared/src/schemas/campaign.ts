@@ -1,5 +1,5 @@
 import z from "zod";
-import { email, id, ProjectEntitySchema, TEMPLATE_STYLES } from "./common";
+import { email, id, ProjectEntitySchema } from "./common";
 
 export const CampaignSchema = ProjectEntitySchema.extend({
   subject: z.string().min(1, "Subject needs to be at least 1 character long").max(70, "Subject needs to be less than 70 characters long"),
@@ -7,7 +7,6 @@ export const CampaignSchema = ProjectEntitySchema.extend({
   email: email.optional().or(z.literal("")),
   from: z.string().optional(),
   recipients: z.array(z.string()),
-  style: z.enum(TEMPLATE_STYLES).default(TEMPLATE_STYLES[0]),
   status: z.enum(["DRAFT", "DELIVERED"]).default("DRAFT"),
 });
 

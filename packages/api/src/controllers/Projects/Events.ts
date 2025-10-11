@@ -128,14 +128,16 @@ export const registerEventsRoutes = (app: AppType) => {
             contact = updatedContact;
           }
         }
-
-        const { subject: enrichedSubject, body: enrichedBody } = EmailService.format({
-          subject,
-          body,
-          data: {
-            ...(contact.data ?? {}),
-            contact_id: contact.id,
-            contact_email: contact.email,
+        const compiledSubject = EmailService.compileSubject(subject, {
+          contact,
+          project,
+        });
+        const compiledBody = EmailService.compileBody(body, {
+          contact,
+          project,
+          email: {
+            sendType: "TRANSACTIONAL",
+            subject,
           },
         });
 
@@ -149,30 +151,17 @@ export const registerEventsRoutes = (app: AppType) => {
           headers,
           attachments,
           content: {
-            subject: enrichedSubject,
-            html: EmailService.compile({
-              isHtml: true,
-              content: enrichedBody,
-              footer: {
-                unsubscribe: false,
-              },
-              contact: {
-                id: contact.id,
-                email: contact.email,
-              },
-              project: {
-                name: project.name,
-              },
-            }),
+            subject: compiledSubject,
+            html: compiledBody,
           },
         });
 
         // Create email record
         const createdEmail = await emailPersistence.create({
           messageId,
-          subject,
+          subject: compiledSubject,
           email: contact.email,
-          body: enrichedBody,
+          body: compiledBody,
           contact: contact.id,
           status: "SENT",
           sendType: "TRANSACTIONAL",

@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { CampaignUpdate, Email } from "@sendra/shared";
 import { CampaignSchemas } from "@sendra/shared";
 import { Ring } from "@uiball/loaders";
+import { EmailEditor } from "dashboard/src/components/EmailEditor";
 import dayjs from "dayjs";
 import { AnimatePresence, motion } from "framer-motion";
 import { Eye, Save, Search, Users2, XIcon } from "lucide-react";
@@ -10,7 +11,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { type FieldError, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Alert, Badge, Card, Dropdown, Editor, FullscreenLoader, Input, MetadataFilterEditor, type MetadataFilterGroupType, Modal, MultiselectDropdown, Table } from "../../components";
+import { Alert, Badge, Card, Dropdown, FullscreenLoader, Input, MetadataFilterEditor, type MetadataFilterGroupType, Modal, MultiselectDropdown, Table } from "../../components";
 import Send from "../../icons/Send";
 import { Dashboard } from "../../layouts";
 import { useCampaign, useCampaignsWithEmails } from "../../lib/hooks/campaigns";
@@ -607,15 +608,7 @@ export default function Index() {
               ))}
 
             <div className={"sm:col-span-6"}>
-              <Editor
-                value={watch("body")}
-                mode={watch("style") ?? "SIMPLE"}
-                onChange={(value, type) => {
-                  setValue("body", value);
-                  setValue("style", type);
-                }}
-                modeSwitcher={campaign.status === "DRAFT"}
-              />
+              <EmailEditor initialValue={campaign.body} onChange={(value) => setValue("body", value)} />
               <AnimatePresence>
                 {errors.body?.message && (
                   <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">

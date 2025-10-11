@@ -1,16 +1,16 @@
 import {
   ActionPersistence,
-  appSettings,
   CampaignPersistence,
   ContactPersistence,
   EmailPersistence,
   EmailService,
+  emailConfig,
   ProjectPersistence,
   rootLogger,
   TemplatePersistence,
   TriggerPersistence,
 } from "@sendra/lib";
-import type { Action, Campaign, SendEmailTaskSchema, Template } from "@sendra/shared";
+import type { Action, Campaign, SendEmailTaskSchema } from "@sendra/shared";
 import type { z } from "zod";
 
 type SendEmailTask = z.infer<typeof SendEmailTaskSchema>;
@@ -19,6 +19,7 @@ export const sendEmail = async (task: SendEmailTask, recordId: string) => {
   const logger = rootLogger.child({
     recordId,
   });
+  logger.info({ ...task.payload }, "Sending email");
   const { action: actionId, campaign: campaignId, contact: contactId, project: projectId } = task.payload;
 
   const projectPersistence = new ProjectPersistence();
@@ -63,7 +64,6 @@ export const sendEmail = async (task: SendEmailTask, recordId: string) => {
   let name = "";
 
   const templatePersistence = new TemplatePersistence(projectId);
-  let template: Template | undefined;
   if (action) {
     const { template: templateId, notevents } = action;
 
@@ -86,33 +86,39 @@ export const sendEmail = async (task: SendEmailTask, recordId: string) => {
       return;
     }
 
-    email = project.verified && project.email ? (template.email ?? project.email) : appSettings.defaultEmail;
+    email = project.verified && project.email ? (template.email ?? project.email) : emailConfig.defaultEmail;
     name = template.from ?? project.from ?? project.name;
 
-    ({ subject, body } = EmailService.format({
-      subject: template.subject,
-      body: template.body,
-      data: {
-        ...contact.data,
-        contact_id: contactId,
-        contact_email: contact.email,
-      },
-    }));
+    body = template.body;
+    subject = template.subject;
   } else if (campaign) {
-    email = project.verified && project.email ? (campaign.email ?? project.email) : appSettings.defaultEmail;
+    email = project.verified && project.email ? (campaign.email ?? project.email) : emailConfig.defaultEmail;
     name = campaign.from ?? project.from ?? project.name;
 
-    ({ subject, body } = EmailService.format({
-      subject: campaign.subject,
-      body: campaign.body,
-      data: {
-        ...contact.data,
-        contact_email: contact.email,
-        contact_id: contact.id,
-      },
-    }));
+    body = campaign.body;
+    subject = campaign.subject;
   }
 
+  logger.info({ subject: body, body: body.length }, "Compiling subject and body");
+
+  const compiledSubject = EmailService.compileSubject(subject, {
+    action,
+    contact,
+    project,
+  });
+
+  const emailBase = {
+    sendType: action ? "MARKETING" : "TRANSACTIONAL",
+    subject: compiledSubject,
+  } as const;
+  const compiledBody = EmailService.compileBody(body, {
+    action,
+    contact,
+    project,
+    email: emailBase,
+  });
+
+  logger.info({ subject: compiledSubject, body: compiledBody.length }, "Sending email");
   const { messageId } = await EmailService.send({
     from: {
       name,
@@ -120,27 +126,15 @@ export const sendEmail = async (task: SendEmailTask, recordId: string) => {
     },
     to: [contact.email],
     content: {
-      subject,
-      html: EmailService.compile({
-        content: body,
-        footer: {
-          unsubscribe: campaign ? true : !!action && template?.templateType === "MARKETING",
-        },
-        contact: {
-          id: contact.id,
-          email: contact.email,
-        },
-        project: {
-          name: project.name,
-        },
-        isHtml: (campaign && campaign.style === "HTML") ?? (!!action && template?.style === "HTML"),
-      }),
+      subject: compiledSubject,
+      html: compiledBody,
     },
   });
 
   // Create email record
   const emailPersistence = new EmailPersistence(project.id);
   await emailPersistence.create({
+    ...emailBase,
     messageId,
     status: "SENT",
     subject,
@@ -148,9 +142,8 @@ export const sendEmail = async (task: SendEmailTask, recordId: string) => {
     email,
     source: action?.id ?? campaign?.id,
     sourceType: action ? "ACTION" : "CAMPAIGN",
-    sendType: "MARKETING",
     contact: contact.id,
   });
 
-  logger.info({ contact: contact.email, project: project.name }, "Task completed");
+  logger.info({ contact: contact.email, project: project.name, messageId }, "Email sent");
 };

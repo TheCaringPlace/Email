@@ -4,19 +4,16 @@ import type { TemplateUpdate } from "@sendra/shared";
 import { TemplateSchemas } from "@sendra/shared";
 import { AnimatePresence, motion } from "framer-motion";
 import { Save, Trash } from "lucide-react";
-import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Card, Dropdown, FullscreenLoader, Input, Tooltip } from "../../components";
+import { EmailEditor } from "../../components/EmailEditor";
 import { Dashboard } from "../../layouts";
 import { useActiveProject } from "../../lib/hooks/projects";
 import { useTemplate, useTemplates } from "../../lib/hooks/templates";
 import { network } from "../../lib/network";
-
-// Dynamically import the EmailEditorComponent to prevent SSR issues
-const DynamicEmailEditorComponent = dynamic(() => import("../../components/EmailEditor"), { ssr: false });
 
 /**
  *
@@ -134,7 +131,10 @@ export default function Index() {
           void mutate();
           return "Deleted your template";
         },
-        error: "Could not delete your template!",
+        error: (err) => {
+          console.error("Failed to delete template", err);
+          return "Could not delete your template!";
+        },
       },
     );
 
@@ -225,7 +225,7 @@ export default function Index() {
           {project.verified && <Input className={"sm:col-span-3"} label={"Sender Name"} placeholder={`${project.from ?? project.name}`} register={register("from")} error={errors.from} />}
 
           <div className={"sm:col-span-6"}>
-            <DynamicEmailEditorComponent />
+            <EmailEditor initialValue={template.body} onChange={(value) => setValue("body", value)} />
 
             <AnimatePresence>
               {errors.body?.message && (

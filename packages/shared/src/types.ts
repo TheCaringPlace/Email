@@ -22,7 +22,6 @@ import type {
   SubscriberSchema,
   SubscriberUpdateSchema,
   TaskSchema,
-  TEMPLATE_STYLES,
   TemplateSchema,
   TemplateSchemas,
   TriggerSchema,
@@ -68,7 +67,6 @@ export type TemplateUpdate = z.infer<typeof TemplateSchemas.update>;
 export type SendTypes = (typeof SEND_TYPES)[number];
 export type Subscriber = z.infer<typeof SubscriberSchema>;
 export type SubscriberUpdate = z.infer<typeof SubscriberUpdateSchema>;
-export type TemplateStyles = (typeof TEMPLATE_STYLES)[number];
 
 export type User = z.infer<typeof UserSchema>;
 export type UserGet = z.infer<typeof UserSchemas.get>;

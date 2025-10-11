@@ -20,12 +20,17 @@ export class network {
     const body = init?.body ? JSON.stringify(init?.body) : undefined;
 
     const headers: Record<string, string> = init?.headers ? { ...(init.headers as Record<string, string>) } : {};
-    headers.Authorization = `Bearer ${token}`;
-    const response = await fetch(url, {
+    const requestInit = {
       ...init,
       body,
       headers,
-    });
+    };
+    headers.Authorization = `Bearer ${token}`;
+    const response = await fetch(url, requestInit);
+
+    if (requestInit.method === "DELETE") {
+      return undefined as unknown as T;
+    }
 
     const res = await response.json();
 

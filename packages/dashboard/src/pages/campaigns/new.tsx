@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type CampaignCreate, CampaignSchemas } from "@sendra/shared";
+import { type CampaignCreate, CampaignSchemas, defaultTemplate } from "@sendra/shared";
 import { Ring } from "@uiball/loaders";
+import { EmailEditor } from "dashboard/src/components/EmailEditor";
 import dayjs from "dayjs";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, Users2, XIcon } from "lucide-react";
@@ -8,7 +9,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { type FieldError, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Alert, Card, Dropdown, Editor, FullscreenLoader, Input, MetadataFilterEditor, type MetadataFilterGroupType, MultiselectDropdown } from "../../components";
+import { Alert, Card, Dropdown, FullscreenLoader, Input, MetadataFilterEditor, type MetadataFilterGroupType, MultiselectDropdown } from "../../components";
 import { Dashboard } from "../../layouts";
 import { useCampaignsWithEmails } from "../../lib/hooks/campaigns";
 import { useAllContactsWithTriggers } from "../../lib/hooks/contacts";
@@ -16,13 +17,6 @@ import { useEvents } from "../../lib/hooks/events";
 import { useActiveProject } from "../../lib/hooks/projects";
 import { network } from "../../lib/network";
 import useFilterContacts from "./filter";
-
-const templates = {
-  blank: {
-    subject: "",
-    body: "",
-  },
-};
 
 /**
  *
@@ -58,8 +52,8 @@ export default function Index() {
     resolver: zodResolver(CampaignSchemas.create),
     defaultValues: {
       recipients: [],
-      ...templates.blank,
-      style: "SIMPLE",
+      subject: "",
+      body: defaultTemplate,
     },
   });
 
@@ -371,15 +365,7 @@ export default function Index() {
           </AnimatePresence>
 
           <div className={"sm:col-span-6"}>
-            <Editor
-              value={watch("body")}
-              mode={watch("style") ?? "SIMPLE"}
-              onChange={(value, type) => {
-                setValue("body", value);
-                setValue("style", type);
-              }}
-              modeSwitcher
-            />
+            <EmailEditor initialValue={defaultTemplate} onChange={(value) => setValue("body", value)} />
             <AnimatePresence>
               {errors.body?.message && (
                 <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">

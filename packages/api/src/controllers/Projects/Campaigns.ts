@@ -1,11 +1,12 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import {
-  appSettings,
   CampaignPersistence,
+  type CompileProps,
   ContactPersistence,
   EmailPersistence,
   EmailService,
   EventPersistence,
+  emailConfig,
   MembershipPersistence,
   ProjectPersistence,
   rootLogger,
@@ -219,27 +220,33 @@ export const registerCampaignsRoutes = (app: AppType) => {
         const users = await userPersistence.batchGet(members.map((m) => m.user));
 
         logger.info({ campaign: campaign.id, recipients: users.length }, "Sending test email");
+
+        const params = {
+          contact: {
+            email: emailConfig.defaultEmail,
+            data: {},
+            subscribed: true,
+          },
+          email: {
+            sendType: "MARKETING",
+            subject: `[Campaign Test] ${campaign.subject}`,
+          },
+          project: {
+            name: project.name,
+            id: project.id,
+          },
+        };
+        const subject = EmailService.compileSubject(`[Campaign Test] ${campaign.subject}`, params);
+        params.email.subject = subject;
         await EmailService.send({
           from: {
             name: project.from ?? project.name,
-            email: project.verified && project.email ? project.email : appSettings.defaultEmail, // TODO: Add env variable to configure default email
+            email: project.verified && project.email ? project.email : emailConfig.defaultEmail, // TODO: Add env variable to configure default email
           },
           to: users.map((m) => m.email),
           content: {
-            subject: `[Campaign Test] ${campaign.subject}`,
-            html: EmailService.compile({
-              content: campaign.body,
-              footer: {
-                unsubscribe: false,
-              },
-              contact: {
-                email: "",
-                id: "",
-              },
-              project: {
-                name: project.name,
-              },
-            }),
+            subject,
+            html: EmailService.compileBody(campaign.body, params as CompileProps),
           },
         });
       }
