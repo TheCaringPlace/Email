@@ -9,7 +9,7 @@ import {
 import type { AppType } from "../../app";
 import { NotFound } from "../../exceptions";
 import { getProblemResponseSchema } from "../../exceptions/responses";
-import { isAuthenticatedProjectMemberOrSecretKey } from "../../middleware/auth";
+import { BearerAuth, isAuthenticatedProjectMemberOrSecretKey } from "../../middleware/auth";
 import { registerProjectEntityCrudRoutes } from "./ProjectEntity";
 
 export const registerActionsRoutes = (app: AppType) => {
@@ -82,6 +82,7 @@ export const registerActionsRoutes = (app: AppType) => {
         403: getProblemResponseSchema(403),
         404: getProblemResponseSchema(404),
       },
+      ...BearerAuth,
       middleware: [isAuthenticatedProjectMemberOrSecretKey],
     }),
     async (c) => {
