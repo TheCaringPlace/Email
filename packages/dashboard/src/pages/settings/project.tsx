@@ -46,7 +46,7 @@ export default function Index() {
 
   const update = async (data: Omit<ProjectUpdate, "id">) => {
     toast.promise(
-      network.fetch(`/projects/update/${activeProject.id}`, {
+      network.fetch(`/projects/${activeProject.id}`, {
         method: "PUT",
         body: {
           id: activeProject.id,

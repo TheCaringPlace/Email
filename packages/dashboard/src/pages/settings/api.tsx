@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Card, FullscreenLoader, Modal, SettingTabs } from "../../components";
 import { Dashboard } from "../../layouts";
+import { API_URI } from "../../lib/constants";
 import { useActiveProject, useActiveProjectKeys } from "../../lib/hooks/projects";
 import { network } from "../../lib/network";
 
@@ -17,6 +18,14 @@ export default function Index() {
 
   if (!activeProject) {
     return <FullscreenLoader />;
+  }
+
+  function expiresAt(key: string | undefined) {
+    if (!key) {
+      return "";
+    }
+    const expiresAt = JSON.parse(atob(key.split(".")[1])).exp;
+    return new Date(expiresAt * 1000).toLocaleString();
   }
 
   const regenerate = () => {
@@ -54,7 +63,7 @@ export default function Index() {
         <SettingTabs />
         <Card
           title={"API access"}
-          description={`Manage your API keys for ${activeProject.name}`}
+          description={`Manage your API access for ${activeProject.name}.`}
           actions={
             <button
               onClick={() => setShowRegenerateModal(!showRegenerateModal)}
@@ -65,21 +74,63 @@ export default function Index() {
             </button>
           }
         >
-          <button
-            onClick={() => {
-              void navigator.clipboard.writeText(activeProjectKeys?.public ?? "");
-              toast.success("Copied your public API key");
-            }}
-          >
-            <label className="block text-sm font-medium text-neutral-700" htmlFor="public-api-key">
-              Public API Key
-            </label>
-            <p className="cursor-pointer rounded border border-neutral-300 bg-neutral-100 px-3 py-2 text-sm truncate" id="public-api-key">
-              {activeProjectKeys?.public}
-            </p>
+          <div className="mt-4">
+            <button
+              onClick={() => {
+                void navigator.clipboard.writeText(API_URI ?? "");
+                toast.success("Copied your API endpoint");
+              }}
+              className="w-full"
+            >
+              <label className="block text-sm font-medium text-neutral-700" htmlFor="api-endpoint">
+                API Endpoint
+              </label>
+              <p className="cursor-pointer rounded border border-neutral-300 bg-neutral-100 px-3 py-2 text-sm truncate" id="api-endpoint">
+                {API_URI}
+              </p>
 
-            <p className="text-sm text-neutral-500">Use this key for any front-end services. This key can only be used to publish events.</p>
-          </button>
+              <p className="text-sm text-neutral-500">The endpoint to your Sendra API.</p>
+            </button>
+          </div>
+
+          <div className="mt-4">
+            <button
+              onClick={() => {
+                void navigator.clipboard.writeText(activeProject?.id ?? "");
+                toast.success("Copied your project ID");
+              }}
+              className="w-full"
+            >
+              <label className="block text-sm font-medium text-neutral-700" htmlFor="project-id">
+                Project ID
+              </label>
+              <p className="cursor-pointer rounded border border-neutral-300 bg-neutral-100 px-3 py-2 text-sm truncate" id="project-id">
+                {activeProject?.id}
+              </p>
+
+              <p className="text-sm text-neutral-500">The ID of your project, used to identify your project in the API.</p>
+            </button>
+          </div>
+
+
+          <div className="mt-4">
+            <button
+              onClick={() => {
+                void navigator.clipboard.writeText(activeProjectKeys?.public ?? "");
+                toast.success("Copied your public API key");
+              }}
+              className="w-full"
+            >
+              <label className="block text-sm font-medium text-neutral-700" htmlFor="public-api-key">
+                Public API Key
+              </label>
+              <p className="cursor-pointer rounded border border-neutral-300 bg-neutral-100 px-3 py-2 text-sm truncate" id="public-api-key">
+                {activeProjectKeys?.public}
+              </p>
+
+              <p className="text-sm text-neutral-500">Use this key for any front-end services. This key can only be used to publish events. This key expires at {expiresAt(activeProjectKeys?.public)}.</p>
+            </button>
+          </div>
 
           <div className="mt-4">
             <button
@@ -87,6 +138,7 @@ export default function Index() {
                 void navigator.clipboard.writeText(activeProjectKeys?.secret ?? "");
                 toast.success("Copied your secret API key");
               }}
+              className="w-full"
             >
               <label className="block text-sm font-medium text-neutral-700" htmlFor="secret-api-key">
                 Secret API Key
@@ -95,7 +147,7 @@ export default function Index() {
                 {activeProjectKeys?.secret}
               </p>
 
-              <p className="text-sm text-neutral-500">Use this key for any secure back-end services. This key gives complete access to your Sendra setup.</p>
+              <p className="text-sm text-neutral-500">Use this key for any secure back-end services. This key gives complete access to your Sendra setup. This key expires at {expiresAt(activeProjectKeys?.secret)}.</p>
             </button>
           </div>
         </Card>
