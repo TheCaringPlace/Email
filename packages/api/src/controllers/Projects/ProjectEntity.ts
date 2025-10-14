@@ -217,7 +217,8 @@ export const registerProjectEntityReadRoutes = <T extends BaseItem>(
       if (!entity) {
         throw new NotFound(config.entityName);
       }
-      // @ts-expect-error
+      // biome-ignore lint/suspicious/noTsIgnore: ts-expect-error doesn't work
+      // @ts-ignore
       return c.json(entity, 200);
     },
   );
@@ -272,7 +273,9 @@ export const registerProjectEntityCrudRoutes = <T extends BaseItem>(app: AppType
         ...toCreate,
         project: projectId,
       } as Omit<T, "id" | "createdAt" | "updatedAt">);
-      // @ts-expect-error
+
+      // biome-ignore lint/suspicious/noTsIgnore: ts-expect-error doesn't work
+      // @ts-ignore
       return c.json(entity, 201);
     },
   );
