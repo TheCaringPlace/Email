@@ -54,11 +54,12 @@ jobs:
 
       - name: Configure .env.json
         run: |
-          echo "${{ secrets.DOT_ENV}}" > .env.json
-          base64 -d .env.json > .env.json
+          echo "${{ secrets.DOT_ENV}}" > .env.txt
+           base64 -d -i .env.txt > .env.json
 
       - name: Set Secrets
         run: |
           npm run sst -- secret set JwtSecret ${{ secrets.JWT_SECRET }}
+
       - name: Deploy app
         run: npm run deploy
