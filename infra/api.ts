@@ -27,6 +27,8 @@ export const api = new sst.aws.Function("Api", {
         "ses:GetIdentityVerificationAttributes",
         "ses:SetIdentityMailFromDomain",
         "ses:GetIdentityDkimAttributes",
+        "ses:VerifyEmailAddress",
+        "ses:VerifyEmailIdentity",
       ],
       resources: ["*"],
     },

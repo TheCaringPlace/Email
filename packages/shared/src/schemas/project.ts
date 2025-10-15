@@ -3,7 +3,7 @@ import { BaseSchema, email, id } from "./common";
 
 export const IdentitySchema = z.object({
   identityType: z.enum(["email", "domain"]).default("email"),
-  identity: z.union([z.email(), z.url()]),
+  identity: z.string(),
   mailFromDomain: z.string().optional(),
   verified: z.boolean().default(false),
 });
