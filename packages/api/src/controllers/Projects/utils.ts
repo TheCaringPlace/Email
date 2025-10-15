@@ -5,7 +5,7 @@ export const validateEmail = async (projectId: string, email?: string) => {
   const projectPersistence = new ProjectPersistence();
   const project = await projectPersistence.get(projectId);
 
-  if (email && !project?.verified) {
+  if (email && !project?.identity?.verified) {
     throw new NotAllowed("You need to attach a domain to your project to customize the sender address");
   }
 

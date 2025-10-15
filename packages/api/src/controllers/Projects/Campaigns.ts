@@ -225,7 +225,7 @@ export const registerCampaignsRoutes = (app: AppType) => {
         await EmailService.send({
           from: {
             name: project.from ?? project.name,
-            email: project.verified && project.email ? project.email : emailConfig.defaultEmail, // TODO: Add env variable to configure default email
+            email: project.identity?.verified && project.email ? project.email : emailConfig.defaultEmail, // TODO: Add env variable to configure default email
           },
           to: users.map((m) => m.email),
           content: {

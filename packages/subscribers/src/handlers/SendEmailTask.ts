@@ -86,13 +86,13 @@ export const sendEmail = async (task: SendEmailTask, recordId: string) => {
       return;
     }
 
-    email = project.verified && project.email ? (template.email ?? project.email) : emailConfig.defaultEmail;
+    email = project.identity?.verified && project.email ? (template.email ?? project.email) : emailConfig.defaultEmail;
     name = template.from ?? project.from ?? project.name;
 
     body = template.body;
     subject = template.subject;
   } else if (campaign) {
-    email = project.verified && project.email ? (campaign.email ?? project.email) : emailConfig.defaultEmail;
+    email = project.identity?.verified && project.email ? (campaign.email ?? project.email) : emailConfig.defaultEmail;
     name = campaign.from ?? project.from ?? project.name;
 
     body = campaign.body;

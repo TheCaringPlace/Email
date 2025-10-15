@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Card, Dropdown, EmailEditor, FullscreenLoader, Input, Tooltip } from "../../components";
 import { Dashboard } from "../../layouts";
-import { useActiveProject } from "../../lib/hooks/projects";
+import { useActiveProject, useActiveProjectIdentity } from "../../lib/hooks/projects";
 import { useTemplates } from "../../lib/hooks/templates";
 import { network } from "../../lib/network";
 
@@ -37,6 +37,7 @@ export default function Index() {
       body: defaultTemplate,
     },
   });
+  const { data: projectIdentity } = useActiveProjectIdentity();
 
   useEffect(() => {
     watch((value, { name }) => {
@@ -127,9 +128,11 @@ export default function Index() {
             </AnimatePresence>
           </div>
 
-          {project.verified && <Input className={"sm:col-span-3"} label={"Sender Email"} placeholder={`${project.email}`} register={register("email")} error={errors.email} />}
+          {projectIdentity?.identity?.verified && <Input className={"sm:col-span-3"} label={"Sender Email"} placeholder={`${project.email}`} register={register("email")} error={errors.email} />}
 
-          {project.verified && <Input className={"sm:col-span-3"} label={"Sender Name"} placeholder={`${project.from ?? project.name}`} register={register("from")} error={errors.from} />}
+          {projectIdentity?.identity?.verified && (
+            <Input className={"sm:col-span-3"} label={"Sender Name"} placeholder={`${project.from ?? project.name}`} register={register("from")} error={errors.from} />
+          )}
 
           <div className={"sm:col-span-6"}>
             <EmailEditor

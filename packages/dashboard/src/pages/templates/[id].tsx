@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { Card, Dropdown, FullscreenLoader, Input, Tooltip } from "../../components";
 import { EmailEditor } from "../../components/EmailEditor";
 import { Dashboard } from "../../layouts";
-import { useActiveProject } from "../../lib/hooks/projects";
+import { useActiveProject, useActiveProjectIdentity } from "../../lib/hooks/projects";
 import { useTemplate, useTemplates } from "../../lib/hooks/templates";
 import { network } from "../../lib/network";
 
@@ -22,6 +22,7 @@ export default function Index() {
   const router = useRouter();
   const project = useActiveProject();
   const { mutate } = useTemplates();
+  const { data: projectIdentity } = useActiveProjectIdentity();
   const { data: template } = useTemplate(router.query.id as string);
   const {
     register,
@@ -220,9 +221,11 @@ export default function Index() {
             </AnimatePresence>
           </div>
 
-          {project.verified && <Input className={"sm:col-span-3"} label={"Sender Email"} placeholder={`${project.email}`} register={register("email")} error={errors.email} />}
+          {projectIdentity?.identity?.verified && <Input className={"sm:col-span-3"} label={"Sender Email"} placeholder={`${project.email}`} register={register("email")} error={errors.email} />}
 
-          {project.verified && <Input className={"sm:col-span-3"} label={"Sender Name"} placeholder={`${project.from ?? project.name}`} register={register("from")} error={errors.from} />}
+          {projectIdentity?.identity?.verified && (
+            <Input className={"sm:col-span-3"} label={"Sender Name"} placeholder={`${project.from ?? project.name}`} register={register("from")} error={errors.from} />
+          )}
 
           <div className={"sm:col-span-6"}>
             <EmailEditor initialValue={template.body} onChange={(value) => setValue("body", value)} />

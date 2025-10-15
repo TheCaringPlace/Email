@@ -18,7 +18,7 @@ import { useCampaign, useCampaignsWithEmails } from "../../lib/hooks/campaigns";
 import { useAllContactsWithEvents } from "../../lib/hooks/contacts";
 import { useEmailsByCampaign } from "../../lib/hooks/emails";
 import { useEventTypes } from "../../lib/hooks/events";
-import { useActiveProject } from "../../lib/hooks/projects";
+import { useActiveProject, useActiveProjectIdentity } from "../../lib/hooks/projects";
 import { network } from "../../lib/network";
 import useFilterContacts from "./filter";
 
@@ -33,6 +33,7 @@ export default function Index() {
   const { data: contacts } = useAllContactsWithEvents();
   const { data: eventTypes } = useEventTypes();
   const { data: emails } = useEmailsByCampaign(campaign?.id);
+  const { data: projectIdentity } = useActiveProjectIdentity();
 
   const [query, setQuery] = useState<{
     events?: string[];
@@ -311,9 +312,11 @@ export default function Index() {
             <div className={"sm:col-span-6 grid sm:grid-cols-6 gap-6"}>
               <Input className={"sm:col-span-6"} label={"Subject"} placeholder={`Welcome to ${project.name}!`} register={register("subject")} error={errors.subject} />
 
-              {project.verified && <Input className={"sm:col-span-3"} label={"Sender Email"} placeholder={`${project.email}`} register={register("email")} error={errors.email} />}
+              {projectIdentity?.identity?.verified && <Input className={"sm:col-span-3"} label={"Sender Email"} placeholder={`${project.email}`} register={register("email")} error={errors.email} />}
 
-              {project.verified && <Input className={"sm:col-span-3"} label={"Sender Name"} placeholder={`${project.from ?? project.name}`} register={register("from")} error={errors.from} />}
+              {projectIdentity?.identity?.verified && (
+                <Input className={"sm:col-span-3"} label={"Sender Name"} placeholder={`${project.from ?? project.name}`} register={register("from")} error={errors.from} />
+              )}
             </div>
 
             {contacts ? (

@@ -161,7 +161,6 @@ export const registerProjectCrudRoutes = (app: AppType) => {
       const project = await new ProjectPersistence().create({
         name,
         url,
-        verified: false,
         secret: randomUUID(),
         public: randomUUID(),
       });

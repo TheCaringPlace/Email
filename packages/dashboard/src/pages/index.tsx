@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Badge, Card, Empty, FullscreenLoader, Redirect, Skeleton, Table } from "../components";
 import { Dashboard } from "../layouts";
-import { useActiveProject, useActiveProjectFeed, useProjects } from "../lib/hooks/projects";
+import { useActiveProject, useActiveProjectFeed, useActiveProjectIdentity, useProjects } from "../lib/hooks/projects";
 
 /**
  *
@@ -14,6 +14,7 @@ export default function Index() {
 
   const activeProject = useActiveProject();
   const { data: projects } = useProjects();
+  const { data: projectIdentity } = useActiveProjectIdentity();
   const { data: feed } = useActiveProjectFeed(feedPage);
 
   if (projects?.length === 0) {
@@ -28,7 +29,7 @@ export default function Index() {
     <Dashboard>
       <div className="divide-y divide-neutral-200 overflow-hidden rounded border border-neutral-200 bg-neutral-200 lg:grid lg:grid-cols-3 lg:gap-px lg:divide-y-0">
         <div className="group relative rounded-tl rounded-tr bg-white p-6 transition focus-within:ring-2 focus-within:ring-inset focus-within:ring-neutral-800 lg:rounded-tr-none">
-          {activeProject.verified ? (
+          {projectIdentity?.identity?.verified ? (
             <>
               <div>
                 <span className="inline-flex rounded bg-neutral-100 p-3 text-neutral-800 ring-4 ring-white">

@@ -95,7 +95,7 @@ export const registerEventsRoutes = (app: AppType) => {
 
       const { from, name, reply, to, subject, body, subscribed, headers, attachments } = result.data;
 
-      if (!project.email || !project.verified) {
+      if (!project.email || !project.identity?.verified) {
         throw new HttpException(400, "Verify your domain before you start sending");
       }
 
