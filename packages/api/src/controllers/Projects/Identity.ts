@@ -4,8 +4,15 @@ import { IdentitySchema, IdentitySchemas } from "@sendra/shared";
 import type { AppType } from "../../app";
 import { Conflict, NotFound } from "../../exceptions";
 import { getProblemResponseSchema } from "../../exceptions/responses";
-import { BearerAuth, isAuthenticatedProjectAdmin, isAuthenticatedProjectMember } from "../../middleware/auth";
-import { getIdentityVerificationAttributes, verifyIdentity } from "../../util/ses";
+import {
+  BearerAuth,
+  isAuthenticatedProjectAdmin,
+  isAuthenticatedProjectMember,
+} from "../../middleware/auth";
+import {
+  getIdentityVerificationAttributes,
+  verifyIdentity,
+} from "../../util/ses";
 
 const logger = rootLogger.child({
   module: "Identity",
@@ -25,7 +32,10 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
         200: {
           content: {
             "application/json": {
-              schema: z.object({ identity: IdentitySchema.optional(), tokens: z.array(z.string()) }),
+              schema: z.object({
+                identity: IdentitySchema.optional(),
+                tokens: z.array(z.string()),
+              }),
             },
           },
           description: "Get identity verification tokens",
@@ -55,7 +65,10 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
       const attributes = await getIdentityVerificationAttributes(project.email);
 
       if (attributes.status === "Success" && !project.identity.verified) {
-        logger.info({ projectId: project.id, email: project.email }, "Project verified");
+        logger.info(
+          { projectId: project.id, email: project.email },
+          "Project verified"
+        );
         // Update project verification status
         const updatedProject = {
           ...project,
@@ -64,8 +77,11 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
         await projectPersistence.put(updatedProject);
       }
 
-      return c.json({ identity: project.identity, tokens: attributes.tokens ?? [] }, 200);
-    },
+      return c.json(
+        { identity: project.identity, tokens: attributes.tokens ?? [] },
+        200
+      );
+    }
   );
 
   app.openapi(
@@ -120,9 +136,19 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
       // Get all projects and check for domain conflicts
 
       const allProjects = await projectPersistence.listAll();
-      const existingProject = allProjects.find((p) => p.email?.split("@")[1] === domain);
+      const existingProject = allProjects
+        .filter((p) => p.identity)
+        .find(
+          (p) =>
+            p.identity?.identity === toVerify.identity ||
+            p.identity?.identity === domain
+        );
 
       if (existingProject && !emailConfig.allowDuplicateProjectIdentities) {
+        logger.warn(
+          { requestingProject: project, existingProject },
+          "Domain already attached to another project"
+        );
         throw new Conflict("Domain already attached to another project");
       }
 
@@ -136,7 +162,7 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
       await projectPersistence.put(updatedProject);
 
       return c.json({ success: true, tokens: tokens ?? [] }, 200);
-    },
+    }
   );
 
   app.openapi(
@@ -181,7 +207,7 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
 
       c.status(200);
       return c.body(null);
-    },
+    }
   );
 
   app.openapi(
@@ -239,6 +265,6 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
       });
 
       return c.json({ success: true, data: project }, 200);
-    },
+    }
   );
 };
