@@ -1,12 +1,12 @@
 import type { Subscriber, SubscriberUpdate } from "@sendra/shared";
 import { motion } from "framer-motion";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { FullscreenLoader, Toggle } from "../../components";
 import { useSubscriber } from "../../lib/hooks/subscriber";
 import { network } from "../../lib/network";
-import Head from "next/head";
 
 /**
  *
