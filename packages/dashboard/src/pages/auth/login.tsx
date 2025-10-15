@@ -6,7 +6,8 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FullscreenLoader, Redirect } from "../../components";
-import { API_URI } from "../../lib/constants";
+import SendraLogo from "../../icons/SendraLogo";
+import { API_URI, TOKEN_KEY } from "../../lib/constants";
 import { useUser } from "../../lib/hooks/users";
 
 /**
@@ -57,7 +58,7 @@ export default function Index() {
         return;
       }
       const body = await response.json();
-      sessionStorage.setItem("token", body.token);
+      sessionStorage.setItem(TOKEN_KEY, body.token);
       await mutate(body);
     } catch {
       setError("email", { message: "login failed" });
@@ -71,6 +72,7 @@ export default function Index() {
   return (
     <div className="bg-off-white flex min-h-screen flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="flex flex-col items-center sm:mx-auto sm:w-full sm:max-w-md">
+        <SendraLogo />
         <h2 className="mt-4 text-center text-3xl font-bold text-neutral-800">Sign in to your account</h2>
       </div>
 

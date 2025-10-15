@@ -55,14 +55,14 @@ export default function Index() {
         isOpen={showRegenerateModal}
         onToggle={() => setShowRegenerateModal(!showRegenerateModal)}
         onAction={regenerate}
-        type={"danger"}
-        title={"Are you sure?"}
-        description={"Any applications that use your previously generated keys will stop working!"}
+        type="danger"
+        title="Are you sure?"
+        description="Any applications that use your previously generated keys will stop working!"
       />
       <Dashboard>
         <SettingTabs />
         <Card
-          title={"API access"}
+          title="API Access"
           description={`Manage your API access for ${activeProject.name}.`}
           actions={
             <button

@@ -1,4 +1,4 @@
-import type { Action, Contact, Email, Membership, ProjectKeys, PublicProject } from "@sendra/shared";
+import type { Action, Contact, Email, Membership, ProjectIdentity, ProjectKeys, PublicProject } from "@sendra/shared";
 import { useAtom } from "jotai";
 import useSWR from "swr";
 import { atomActiveProject } from "../atoms/project";
@@ -70,11 +70,11 @@ export function useActiveProjectFeed(page: number) {
 /**
  *
  */
-export function useActiveProjectVerifiedIdentity() {
+export function useActiveProjectIdentity() {
   const activeProject = useActiveProject();
 
   return useSWR<{
-    verified: boolean;
+    identity: ProjectIdentity;
     tokens: string[];
   }>(activeProject ? `/projects/${activeProject.id}/identity` : null);
 }

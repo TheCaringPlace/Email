@@ -1,6 +1,6 @@
 import { createRoute, z } from "@hono/zod-openapi";
-import { ProjectPersistence, rootLogger } from "@sendra/lib";
-import { IdentitySchemas } from "@sendra/shared";
+import { emailConfig, ProjectPersistence, rootLogger } from "@sendra/lib";
+import { IdentitySchema, IdentitySchemas } from "@sendra/shared";
 import type { AppType } from "../../app";
 import { Conflict, NotFound } from "../../exceptions";
 import { getProblemResponseSchema } from "../../exceptions/responses";
@@ -25,7 +25,7 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
         200: {
           content: {
             "application/json": {
-              schema: z.object({ verified: z.boolean(), tokens: z.array(z.string()) }),
+              schema: z.object({ identity: IdentitySchema.optional(), tokens: z.array(z.string()) }),
             },
           },
           description: "Get identity verification tokens",
@@ -48,24 +48,23 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
         throw new NotFound("project");
       }
 
-      if (!project.email) {
-        return c.json({ verified: false, tokens: [] }, 200);
+      if (!project.email || !project.identity) {
+        return c.json({ identity: project.identity, tokens: [] }, 200);
       }
 
       const attributes = await getIdentityVerificationAttributes(project.email);
 
-      if (attributes.status === "Success" && !project.verified) {
+      if (attributes.status === "Success" && !project.identity.verified) {
         logger.info({ projectId: project.id, email: project.email }, "Project verified");
-        // Update project verification status in DynamoDB
+        // Update project verification status
         const updatedProject = {
           ...project,
-          verified: true,
-          updatedAt: new Date().toISOString(),
+          identity: { ...project.identity, verified: true },
         };
         await projectPersistence.put(updatedProject);
       }
 
-      return c.json({ verified: true, tokens: attributes.tokens ?? [] }, 200);
+      return c.json({ identity: project.identity, tokens: attributes.tokens ?? [] }, 200);
     },
   );
 
@@ -80,15 +79,8 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
         body: {
           content: {
             "application/json": {
-              schema: IdentitySchemas.create,
+              schema: IdentitySchemas.verify,
             },
-          },
-        },
-      },
-      body: {
-        content: {
-          "application/json": {
-            schema: IdentitySchemas.create,
           },
         },
       },
@@ -99,7 +91,7 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
               schema: z.object({ tokens: z.array(z.string()) }),
             },
           },
-          description: "Create identity verification tokens",
+          description: "Verify identity",
         },
         400: getProblemResponseSchema(400),
         401: getProblemResponseSchema(401),
@@ -112,7 +104,7 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
       hide: true,
     }),
     async (c) => {
-      const { email } = IdentitySchemas.create.parse(await c.req.json());
+      const toVerify = IdentitySchemas.verify.parse(await c.req.json());
       const projectId = c.req.param("projectId");
 
       const projectPersistence = new ProjectPersistence();
@@ -123,24 +115,23 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
       }
 
       // Check if domain is already attached to another project
-      const domain = email.split("@")[1];
+      const domain = toVerify.identity.split("@")[1];
 
       // Get all projects and check for domain conflicts
 
       const allProjects = await projectPersistence.listAll();
       const existingProject = allProjects.find((p) => p.email?.split("@")[1] === domain);
 
-      if (existingProject) {
+      if (existingProject && !emailConfig.allowDuplicateProjectIdentities) {
         throw new Conflict("Domain already attached to another project");
       }
 
-      const tokens = await verifyIdentity(email);
+      const tokens = await verifyIdentity(toVerify);
 
       // Update project with email and verification status
       const updatedProject = {
         ...project,
-        email,
-        verified: false,
+        identity: { ...toVerify, verified: false },
       };
       await projectPersistence.put(updatedProject);
 

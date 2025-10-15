@@ -12,6 +12,7 @@ import type {
   EventSchema,
   EventSchemas,
   EventTypeSchema,
+  IdentitySchema,
   MembershipRoleSchema,
   MembershipSchema,
   MembershipSchemas,
@@ -57,6 +58,7 @@ export type MembershipKick = z.infer<typeof MembershipSchemas.kick>;
 export type Project = z.infer<typeof ProjectSchema>;
 export type ProjectCreate = z.infer<typeof ProjectSchemas.create>;
 export type ProjectUpdate = z.infer<typeof ProjectSchemas.update>;
+export type ProjectIdentity = z.infer<typeof IdentitySchema>;
 export type ProjectKeys = z.infer<typeof ProjectKeysSchema>;
 export type PublicProject = z.infer<typeof PublicProjectSchema>;
 export type Task = z.infer<typeof TaskSchema>;

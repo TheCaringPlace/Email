@@ -1,4 +1,5 @@
 import { SES } from "@aws-sdk/client-ses";
+import type { ProjectIdentity } from "@sendra/shared";
 
 export const ses = new SES();
 
@@ -13,15 +14,24 @@ export const getIdentities = async (identities: string[]) => {
   });
 };
 
-export const verifyIdentity = async (email: string) => {
+export const verifyIdentity = async ({ identity, identityType, mailFromDomain }: Omit<ProjectIdentity, "verified">) => {
+  if (identityType === "email") {
+    await ses.verifyEmailIdentity({
+      EmailAddress: identity,
+    });
+    return [];
+  }
+
   const DKIM = await ses.verifyDomainDkim({
-    Domain: email.includes("@") ? email.split("@")[1] : email,
+    Domain: identity,
   });
 
-  await ses.setIdentityMailFromDomain({
-    Identity: email.includes("@") ? email.split("@")[1] : email,
-    MailFromDomain: email.includes("@") ? email.split("@")[1] : email,
-  });
+  if (mailFromDomain) {
+    await ses.setIdentityMailFromDomain({
+      Identity: identity,
+      MailFromDomain: mailFromDomain,
+    });
+  }
 
   return DKIM.DkimTokens;
 };

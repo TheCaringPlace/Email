@@ -1,4 +1,4 @@
-import { API_URI } from "./constants";
+import { API_URI, TOKEN_KEY } from "./constants";
 
 export class network {
   /**
@@ -15,7 +15,7 @@ export class network {
   ): Promise<T> {
     const url = path.startsWith("http") ? path : API_URI + path;
 
-    const token = sessionStorage.getItem("token");
+    const token = sessionStorage.getItem(TOKEN_KEY);
 
     const body = init?.body ? JSON.stringify(init?.body) : undefined;
 

@@ -1,15 +1,22 @@
 import z from "zod";
 import { BaseSchema, email, id } from "./common";
 
+export const IdentitySchema = z.object({
+  identityType: z.enum(["email", "domain"]).default("email"),
+  identity: z.union([z.email(), z.url()]),
+  mailFromDomain: z.string().optional(),
+  verified: z.boolean().default(false),
+});
+
 export const ProjectSchema = BaseSchema.extend({
   id,
   name: z.string().min(1, "Name can't be empty"),
   email: email.optional(),
   from: z.string().optional(),
-  verified: z.boolean().default(false),
   secret: z.string(),
   public: z.string(),
   url: z.url(),
+  identity: IdentitySchema.optional(),
 });
 
 export const ProjectKeysSchema = z.object({
@@ -20,6 +27,7 @@ export const ProjectKeysSchema = z.object({
 export const PublicProjectSchema = ProjectSchema.omit({
   secret: true,
   public: true,
+  identity: true,
 });
 
 export const ProjectSchemas = {
@@ -42,15 +50,11 @@ export const ProjectSchemas = {
 };
 
 export const IdentitySchemas = {
-  create: z.object({
-    email: email.refine(
-      (e) => {
-        return !["gmail.com", "outlook.com", "hotmail.com", "yahoo.com"].includes(e.split("@")[1]);
-      },
-      { message: "Please use your own domain" },
-    ),
+  verify: IdentitySchema.omit({
+    verified: true,
   }),
   update: z.object({
     from: z.string(),
+    email,
   }),
 };

@@ -1,15 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { IdentitySchemas } from "@sendra/shared";
+import { IdentitySchemas, type ProjectIdentity } from "@sendra/shared";
 import { motion } from "framer-motion";
 import { Copy, Unlink } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
-import { Alert, Badge, Card, FullscreenLoader, Input, SettingTabs, Table } from "../../components";
+import { Alert, Badge, Card, Dropdown, FullscreenLoader, Input, SettingTabs, Table } from "../../components";
 import { Dashboard } from "../../layouts";
 import { AWS_REGION } from "../../lib/constants";
-import { useActiveProject, useActiveProjectVerifiedIdentity, useProjects } from "../../lib/hooks/projects";
+import { useActiveProject, useActiveProjectIdentity, useProjects } from "../../lib/hooks/projects";
 import { network } from "../../lib/network";
 
 /**
@@ -18,14 +18,26 @@ import { network } from "../../lib/network";
 export default function Index() {
   const activeProject = useActiveProject();
   const { mutate: projectsMutate } = useProjects();
-  const { data: identity, mutate: identityMutate } = useActiveProjectVerifiedIdentity();
+
+  const { data: projectIdentity, mutate: identityMutate } = useActiveProjectIdentity();
+
+  const identity = useMemo(() => {
+    return projectIdentity?.identity ?? { identity: "", identityType: "email", mailFromDomain: undefined, verified: false };
+  }, [projectIdentity?.identity]);
 
   const {
-    register,
-    handleSubmit,
-    formState: { errors },
+    register: registerVerify,
+    handleSubmit: handleSubmitVerify,
+    watch: watchVerify,
+    formState: { errors: errorsVerify },
+    setValue: setValueVerify,
   } = useForm({
-    resolver: zodResolver(IdentitySchemas.create),
+    resolver: zodResolver(IdentitySchemas.verify),
+    defaultValues: {
+      identityType: "email",
+      identity: identity.identity ?? "",
+      mailFromDomain: identity.mailFromDomain ?? undefined,
+    },
   });
 
   const {
@@ -45,31 +57,31 @@ export default function Index() {
     reset({ from: activeProject.from ?? undefined });
   }, [reset, activeProject]);
 
-  if (!activeProject || !identity) {
+  if (!activeProject || !projectIdentity) {
     return <FullscreenLoader />;
   }
 
-  const create = async (data: z.infer<typeof IdentitySchemas.create>) => {
+  const verify = async (data: Omit<ProjectIdentity, "verified">) => {
     toast.promise(
       network.fetch<
         {
           success: true;
           tokens: string[];
         },
-        z.infer<typeof IdentitySchemas.create>
+        z.infer<typeof IdentitySchemas.verify>
       >(`/projects/${activeProject.id}/identity`, {
         method: "POST",
         body: data,
       }),
       {
-        loading: "Adding your domain",
+        loading: "Verifying identity",
         success: (res) => {
-          void identityMutate({ tokens: res.tokens, verified: identity.verified }, { revalidate: false });
+          void identityMutate({ tokens: res.tokens, identity: { ...projectIdentity.identity, verified: true } }, { revalidate: false });
           void projectsMutate();
 
-          return "Added your domain";
+          return "Identity verified";
         },
-        error: "Could not add domain",
+        error: "Could not verify identity",
       },
     );
   };
@@ -86,13 +98,13 @@ export default function Index() {
         body: data,
       }),
       {
-        loading: "Updating your sender name",
+        loading: "Updating your sender information",
         success: () => {
           void projectsMutate();
 
-          return "Updated your sender name";
+          return "Updated your sender information";
         },
-        error: "Could not update sender name",
+        error: "Could not update sender information",
       },
     );
   };
@@ -103,18 +115,18 @@ export default function Index() {
         method: "DELETE",
       }),
       {
-        loading: "Unlinking your domain",
+        loading: "Unlinking your identity",
         success: () => {
           void projectsMutate();
 
-          return "Unlinked your domain";
+          return "Unlinked your identity";
         },
-        error: "Could not unlink domain",
+        error: "Could not unlink identity",
       },
     );
   };
 
-  const domain = activeProject.email?.split("@")[1] ?? "";
+  const domain = identity.identity.split("@")[1] ?? "";
   const subdomain = domain.split(".").length > 2 ? domain.split(".")[0] : "";
 
   return (
@@ -122,8 +134,8 @@ export default function Index() {
       <SettingTabs />
 
       <Card
-        title={"Domain"}
-        description={"By sending emails from your own domain you build up domain authority and trust."}
+        title="Identity"
+        description="By sending emails from your own domain you build up domain authority and trust."
         actions={
           activeProject.email && (
             <button onClick={unlink} className={"flex items-center gap-x-2 rounded bg-red-600 px-8 py-2 text-center text-sm font-medium text-white transition ease-in-out hover:bg-red-700"}>
@@ -133,10 +145,10 @@ export default function Index() {
           )
         }
       >
-        {activeProject.email && !activeProject.verified ? (
+        {identity.identityType === "domain" && !identity.verified && (
           <>
             <Alert type={"warning"} title={"Waiting for DNS verification"}>
-              Please add the following records to {activeProject.email.split("@")[1]} to verify {activeProject.email}, this may take up to 15 minutes to register. <br />
+              Please add the following records to {domain} to verify {identity.identity}, this may take up to 15 minutes to register. <br />
               In the meantime you can already start sending emails, we will automatically switch to your domain once it is verified.
             </Alert>
 
@@ -196,7 +208,7 @@ export default function Index() {
                       </button>
                     ),
                   },
-                  ...identity.tokens.map((token) => {
+                  ...projectIdentity.tokens.map((token) => {
                     return {
                       Type: <Badge type={"info"}>CNAME</Badge>,
                       Key: (
@@ -231,13 +243,27 @@ export default function Index() {
               />
             </div>
           </>
-        ) : activeProject.email && activeProject.verified ? (
-          <Alert type={"success"} title={"Domain verified"}>
-            You have confirmed {activeProject.email} as your domain. Any emails sent by Sendra will now use this address.
+        )}
+        {identity.verified && (
+          <Alert type={"success"} title={"Identity verified"}>
+            You have confirmed {identity.identity} as your identity. You can now start sending emails.
           </Alert>
-        ) : (
-          <form onSubmit={handleSubmit(create)} className="space-y-6">
-            <Input register={register("email")} error={errors.email} placeholder={"hello@example.com"} label={"Email"} />
+        )}
+        {!identity.verified && (
+          <form onSubmit={handleSubmitVerify(verify)} className="space-y-6">
+            <label htmlFor="identityType" className="block text-sm font-medium text-neutral-700">
+              Identity Type
+            </label>
+            <Dropdown
+              selectedValue={watchVerify("identityType") ?? ""}
+              values={[
+                { name: "Email", value: "email" },
+                { name: "Domain", value: "domain" },
+              ]}
+              onChange={(t) => setValueVerify("identityType", t as "email" | "domain")}
+            />
+            <Input register={registerVerify("identity")} error={errorsVerify.identity} placeholder={"hello@example.com or example.com"} label="Identity" />
+            <Input register={registerVerify("mailFromDomain")} error={errorsVerify.mailFromDomain} placeholder={"hello@example.com"} label="Mail From Domain" />
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.9 }}
@@ -247,15 +273,21 @@ export default function Index() {
                 <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 5.75V18.25" />
                 <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M18.25 12L5.75 12" />
               </svg>
-              Verify domain
+              Verify identity
             </motion.button>
           </form>
         )}
       </Card>
 
-      <Card title={"Sender name"} description={"The name that will be used when sending emails from Sendra. Your project name will be used by default"}>
+      <Card title="Sender" description="The name and email that will be used when sending emails from Sendra. Your project name will be used by default">
         <form onSubmit={handleSubmitUpdate(update)} className="space-y-6">
           <Input register={registerUpdate("from")} placeholder={activeProject.name} label={"Name"} error={errorsUpdate.from} />
+          <Input
+            register={registerUpdate("email")}
+            placeholder={activeProject.email ?? (identity.identityType === "email" ? identity.identity : undefined)}
+            label={"Email"}
+            error={errorsUpdate.email}
+          />
 
           <motion.button
             whileHover={{ scale: 1.05 }}
