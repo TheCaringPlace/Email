@@ -1,7 +1,8 @@
-import type { Contact, Event } from "@sendra/shared";
+import type { Contact } from "@sendra/shared";
 import dayjs from "dayjs";
 import { useMemo } from "react";
-import type { MetadataFilterGroupType, MetadataFilterType } from "../../components";
+import type { MetadataFilterGroupType, MetadataFilterType } from "../Input/MetadataFilter/types";
+import type { ContactWithEvents, FilterQuery } from "./types";
 
 /**
  * Mapping of the filter conditions to the functions to use
@@ -66,12 +67,7 @@ function matchesMetadataFilter(contact: Contact, filter: MetadataFilterType) {
  * @param filter Metadata filter to filter contacts
  * @returns Filtered contacts
  */
-function filterContactsByMetadata(
-  contacts: (Contact & {
-    _embed: { events: Event[] };
-  })[],
-  filter: MetadataFilterGroupType,
-) {
+function filterContactsByMetadata(contacts: ContactWithEvents[], filter: MetadataFilterGroupType) {
   return contacts.filter((contact) => {
     if (!filter.filters || !filter.filters.length) {
       return true;
@@ -93,18 +89,7 @@ function filterContactsByMetadata(
  * @param query Query to filter contacts
  * @returns Filtered contacts
  */
-export default function useFilterContacts(
-  contacts: (Contact & {
-    _embed: { events: Event[] };
-  })[],
-  query: {
-    events?: string[];
-    last?: "day" | "week" | "month";
-    notevents?: string[];
-    notlast?: "day" | "week" | "month";
-    metadataFilter?: MetadataFilterGroupType;
-  },
-) {
+export default function useFilterContacts(contacts: ContactWithEvents[], query: FilterQuery) {
   return useMemo(() => {
     if (!contacts) {
       return [];

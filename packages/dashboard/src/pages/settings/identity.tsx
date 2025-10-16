@@ -65,8 +65,7 @@ export default function Index() {
     toast.promise(
       network.fetch<
         {
-          success: true;
-          tokens: string[];
+          dkimTokens?: string[];
         },
         z.infer<typeof IdentitySchemas.verify>
       >(`/projects/${activeProject.id}/identity`, {
@@ -76,7 +75,7 @@ export default function Index() {
       {
         loading: "Verifying identity",
         success: (res) => {
-          void identityMutate({ tokens: res.tokens, identity: { ...projectIdentity.identity, verified: true } }, { revalidate: false });
+          void identityMutate({ status: "Pending", dkimTokens: res.dkimTokens, identity: { ...projectIdentity.identity, verified: true } }, { revalidate: false });
           void projectsMutate();
 
           return "Identity verified";
@@ -126,7 +125,7 @@ export default function Index() {
     );
   };
 
-  const domain = identity.identity.split("@")[1] ?? "";
+  const domain = identity?.identity?.split("@")[1] ?? "";
   const subdomain = domain.split(".").length > 2 ? domain.split(".")[0] : "";
 
   return (
@@ -208,7 +207,7 @@ export default function Index() {
                       </button>
                     ),
                   },
-                  ...projectIdentity.tokens.map((token) => {
+                  ...(projectIdentity?.dkimTokens ?? []).map((token) => {
                     return {
                       Type: <Badge type={"info"}>CNAME</Badge>,
                       Key: (

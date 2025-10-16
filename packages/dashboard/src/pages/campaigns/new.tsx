@@ -1,22 +1,19 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type CampaignCreate, CampaignSchemas, defaultTemplate } from "@sendra/shared";
-import { Ring } from "@uiball/loaders";
 import { EmailEditor } from "dashboard/src/components/EmailEditor";
 import dayjs from "dayjs";
 import { AnimatePresence, motion } from "framer-motion";
-import { Search, Users2, XIcon } from "lucide-react";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { type FieldError, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Alert, Card, Dropdown, FullscreenLoader, Input, MetadataFilterEditor, type MetadataFilterGroupType, MultiselectDropdown } from "../../components";
+import { Alert, Card, FullscreenLoader, Input } from "../../components";
+import { ContactSelector } from "../../components/ContactSelector";
 import { Dashboard } from "../../layouts";
 import { useCampaignsWithEmails } from "../../lib/hooks/campaigns";
 import { useAllContactsWithEvents } from "../../lib/hooks/contacts";
-import { useEventTypes } from "../../lib/hooks/events";
 import { useActiveProject, useActiveProjectIdentity } from "../../lib/hooks/projects";
 import { network } from "../../lib/network";
-import useFilterContacts from "./filter";
 
 /**
  *
@@ -28,18 +25,6 @@ export default function Index() {
   const { mutate } = useCampaignsWithEmails();
   const { data: contacts } = useAllContactsWithEvents();
   const { data: projectIdentity } = useActiveProjectIdentity();
-  const { data: eventTypes } = useEventTypes();
-
-  const [query, setQuery] = useState<{
-    events?: string[];
-    last?: "day" | "week" | "month";
-    notevents?: string[];
-    notlast?: "day" | "week" | "month";
-    metadataFilter?: MetadataFilterGroupType;
-  }>({});
-  const [advancedSelector, setSelector] = useState(false);
-
-  const filteredContacts = useFilterContacts(contacts ?? [], query);
 
   const {
     register,
@@ -73,7 +58,7 @@ export default function Index() {
     });
   }, [watch, project, setError, clearErrors]);
 
-  if (!project || !eventTypes) {
+  if (!project || !contacts) {
     return <FullscreenLoader />;
   }
 
@@ -113,221 +98,24 @@ export default function Index() {
             )}
           </div>
 
-          {contacts ? (
-            <>
-              <div className={"sm:col-span-3"}>
-                <label htmlFor={"recipients"} className="block text-sm font-medium text-neutral-700">
-                  Recipients
-                </label>
-                <MultiselectDropdown
-                  onChange={(c) => setValue("recipients", c)}
-                  values={contacts
-                    .filter((c) => c.subscribed)
-                    .map((c) => {
-                      return { name: c.email, value: c.id };
-                    })}
-                  selectedValues={watch("recipients")}
-                />
-                <AnimatePresence>
-                  {(errors.recipients as FieldError | undefined)?.message && (
-                    <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">
-                      {(errors.recipients as FieldError | undefined)?.message}
-                    </motion.p>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div className={"grid gap-6 sm:col-span-3 sm:grid-cols-2"}>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-
-                    if (watch("recipients").length > 0) {
-                      return setValue("recipients", []);
-                    }
-
-                    setValue(
-                      "recipients",
-                      contacts.filter((c) => c.subscribed).map((c) => c.id),
-                    );
-                  }}
-                  className={
-                    "mt-6 flex items-center justify-center gap-x-1 rounded border border-neutral-300 bg-white px-8 py-1 text-center text-sm font-medium text-neutral-800 transition ease-in-out hover:bg-neutral-100"
-                  }
-                >
-                  {watch("recipients").length === 0 ? <Users2 size={18} /> : <XIcon size={18} />}
-                  {watch("recipients").length === 0 ? "All contacts" : "Clear selection"}
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setSelector(!advancedSelector);
-                  }}
-                  className={
-                    "mt-6 flex items-center justify-center gap-x-1 rounded border border-neutral-300 bg-white px-8 py-1 text-center text-sm font-medium text-neutral-800 transition ease-in-out hover:bg-neutral-100"
-                  }
-                >
-                  {advancedSelector ? <XIcon size={18} /> : <Search size={18} />}
-                  {advancedSelector ? "Close" : "Advanced selector"}
-                </button>
-              </div>
-
-              <AnimatePresence>
-                {advancedSelector && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className={"relative z-20 grid gap-6 rounded border border-neutral-300 px-6 py-6 sm:col-span-6 sm:grid-cols-4"}
-                  >
-                    <div className={"sm:col-span-2"}>
-                      <label htmlFor={"event"} className="block text-sm font-medium text-neutral-700">
-                        Has triggers for events
-                      </label>
-                      <MultiselectDropdown
-                        onChange={(e) =>
-                          setQuery(
-                            e.length > 0
-                              ? { ...query, events: e }
-                              : {
-                                  ...query,
-                                  events: undefined,
-                                  last: undefined,
-                                },
-                          )
-                        }
-                        values={[
-                          ...eventTypes
-                            .filter((e) => !query.notevents?.includes(e.id))
-                            .sort((a, b) => a.name.localeCompare(b.name))
-                            .map((e) => {
-                              return {
-                                name: e.name,
-                                value: e.id,
-                              };
-                            }),
-                        ]}
-                        selectedValues={query.events ?? []}
-                      />
-                    </div>
-
-                    <div className={"sm:col-span-2"}>
-                      {query.events && query.events.length > 0 && (
-                        <>
-                          <label htmlFor={"event"} className="block text-sm font-medium text-neutral-700">
-                            Has triggered {query.events.length} selected events
-                          </label>
-                          <Dropdown
-                            onChange={(e) =>
-                              setQuery({
-                                ...query,
-                                last: (e as "" | "day" | "week" | "month") === "" ? undefined : (e as "day" | "week" | "month"),
-                              })
-                            }
-                            values={[
-                              { name: "Anytime", value: "" },
-                              { name: "In the last day", value: "day" },
-                              { name: "In the last week", value: "week" },
-                              { name: "In the last month", value: "month" },
-                            ]}
-                            selectedValue={query.last ?? ""}
-                          />
-                        </>
-                      )}
-                    </div>
-
-                    <div className={"sm:col-span-2"}>
-                      <label htmlFor={"event"} className="block text-sm font-medium text-neutral-700">
-                        No triggers for events
-                      </label>
-                      <MultiselectDropdown
-                        onChange={(e) => {
-                          setQuery(
-                            e.length > 0
-                              ? { ...query, notevents: e }
-                              : {
-                                  ...query,
-                                  notevents: undefined,
-                                  notlast: undefined,
-                                },
-                          );
-                        }}
-                        values={[
-                          ...eventTypes
-                            .filter((e) => !query.events?.includes(e.id))
-                            .sort((a, b) => a.name.localeCompare(b.name))
-                            .map((e) => {
-                              return {
-                                name: e.name,
-                                value: e.id,
-                              };
-                            }),
-                        ]}
-                        selectedValues={query.notevents ?? []}
-                      />
-                    </div>
-
-                    <div className={"sm:col-span-2"}>
-                      {query.notevents && query.notevents.length > 0 && (
-                        <>
-                          <label htmlFor={"event"} className="block text-sm font-medium text-neutral-700">
-                            Not triggered {query.notevents.length} selected events
-                          </label>
-                          <Dropdown
-                            onChange={(e) =>
-                              setQuery({
-                                ...query,
-                                notlast: (e as "" | "day" | "week" | "month") === "" ? undefined : (e as "day" | "week" | "month"),
-                              })
-                            }
-                            values={[
-                              { name: "Anytime", value: "" },
-                              { name: "In the last day", value: "day" },
-                              { name: "In the last week", value: "week" },
-                              { name: "In the last month", value: "month" },
-                            ]}
-                            selectedValue={query.notlast ?? ""}
-                          />
-                        </>
-                      )}
-                    </div>
-
-                    <MetadataFilterEditor onChange={(filter) => setQuery({ ...query, metadataFilter: filter })} contacts={contacts} />
-
-                    <div className={"sm:col-span-4"}>
-                      <motion.button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setValue(
-                            "recipients",
-                            filteredContacts.map((c) => c.id),
-                          );
-                        }}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.9 }}
-                        className={"ml-auto flex items-center justify-center gap-x-0.5 rounded bg-neutral-800 px-8 py-2 text-center text-sm font-medium text-white"}
-                      >
-                        <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                          <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 5.75V18.25" />
-                          <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M18.25 12L5.75 12" />
-                        </svg>
-                        Select {filteredContacts.length} contacts
-                      </motion.button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </>
-          ) : (
-            <div className={"flex items-center gap-6 rounded border border-neutral-300 px-8 py-3 sm:col-span-6"}>
-              <Ring size={20} />
-              <div>
-                <h1 className={"text-lg font-semibold text-neutral-800"}>Hang on!</h1>
-                <p className={"text-sm text-neutral-600"}>We're still loading your contacts. This might take up to a minute. You can already start writing your campaign in the editor below.</p>
-              </div>
-            </div>
-          )}
+          <ContactSelector
+            contacts={contacts}
+            disabled={false}
+            label="Recipients"
+            onChange={(recipients) =>
+              setValue(
+                "recipients",
+                recipients.map((r) => r.id),
+              )
+            }
+          />
+          <AnimatePresence>
+            {(errors.recipients as FieldError | undefined)?.message && (
+              <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">
+                {(errors.recipients as FieldError | undefined)?.message}
+              </motion.p>
+            )}
+          </AnimatePresence>
 
           <AnimatePresence>
             {watch("recipients").length >= 10 && (

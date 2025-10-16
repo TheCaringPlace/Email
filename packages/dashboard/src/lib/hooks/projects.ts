@@ -75,7 +75,9 @@ export function useActiveProjectIdentity() {
 
   return useSWR<{
     identity: ProjectIdentity;
-    tokens: string[];
+    status: "Pending" | "Success" | "Failed" | "TemporaryFailure" | "NotStarted";
+    dkimTokens?: string[];
+    dkimEnabled?: boolean;
   }>(activeProject ? `/projects/${activeProject.id}/identity` : null);
 }
 

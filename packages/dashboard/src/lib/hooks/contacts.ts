@@ -1,5 +1,6 @@
 import type { Contact, Email, Event } from "@sendra/shared";
 import useSWR from "swr";
+import useSWRInfinite from "swr/infinite";
 import { useActiveProject } from "./projects";
 
 type ContactWithEvents = Contact & { _embed: { events: Event[] } };
@@ -25,49 +26,29 @@ export function useAllContactsWithEvents() {
   return useSWR<ContactWithEvents[]>(activeProject?.id ? `/projects/${activeProject.id}/contacts/all?embed=events` : null);
 }
 
-export function useContactsWithEvents(cursor?: string) {
-  const activeProject = useActiveProject();
-  return useSWR<{
-    items: ContactWithEvents[];
-    cursor?: string;
-    count: number;
-  }>(activeProject ? `/projects/${activeProject?.id}/contacts?embed=events${cursor ? `&cursor=${cursor}` : ""}` : null);
-}
-
 /**
  *
  * @param cursor
  */
-export function useContacts(cursor?: string) {
+export function useContacts() {
   const activeProject = useActiveProject();
 
-  return useSWR<{
-    contacts: Contact[];
+  return useSWRInfinite<{
+    items: Contact[];
     cursor: string;
     count: number;
-  }>(activeProject ? `/projects/${activeProject.id}/contacts?cursor=${cursor}` : null);
-}
-
-/**
- *
- * @param query
- */
-export function searchContacts(query: string | undefined) {
-  const activeProject = useActiveProject();
-
-  let url = null;
-  if (activeProject) {
-    if (query) {
-      url = `/projects/${activeProject.id}/contacts/search?query=${query}`;
-    } else {
-      url = `/projects/${activeProject.id}/contacts?embed=events`;
+  }>((_, prev) => {
+    if (!activeProject) {
+      return null;
     }
-  }
-  return useSWR<{
-    contacts: (Contact & { _embed: { events: Event[]; emails: Email[] } })[];
-    count: number;
-  }>(url, {
-    revalidateOnFocus: false,
-    refreshInterval: 0,
+    if (!prev) {
+      return `/projects/${activeProject.id}/contacts`;
+    }
+    if (!prev.cursor) {
+      return null; // reached the end
+    }
+
+    const params = new URLSearchParams({ cursor: prev.cursor });
+    return `/projects/${activeProject.id}/contacts?${params.toString()}`; // SWR key
   });
 }

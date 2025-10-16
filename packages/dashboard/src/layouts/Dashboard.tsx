@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
+import { Menu } from "lucide-react";
 import { useRouter } from "next/router";
 import type React from "react";
 import { useState } from "react";
@@ -32,9 +33,7 @@ export const Dashboard = (props: { children: React.ReactNode }) => {
             onClick={() => setMobileSidebarOpen(true)}
           >
             <span className="sr-only">Open sidebar</span>
-            <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+            <Menu />
           </button>
         </div>
         <main className="relative z-0 flex-1 overflow-y-scroll focus:outline-none">

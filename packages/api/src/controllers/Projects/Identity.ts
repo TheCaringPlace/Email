@@ -1,11 +1,12 @@
+import { VerificationStatus } from "@aws-sdk/client-ses";
 import { createRoute, z } from "@hono/zod-openapi";
 import { emailConfig, ProjectPersistence, rootLogger } from "@sendra/lib";
-import { IdentitySchema, IdentitySchemas } from "@sendra/shared";
+import { IdentitySchema, IdentitySchemas, ProjectSchemas } from "@sendra/shared";
 import type { AppType } from "../../app";
 import { Conflict, NotFound } from "../../exceptions";
 import { getProblemResponseSchema } from "../../exceptions/responses";
 import { BearerAuth, isAuthenticatedProjectAdmin, isAuthenticatedProjectMember } from "../../middleware/auth";
-import { getIdentityVerificationAttributes, verifyIdentity } from "../../util/ses";
+import { getIdentityVerificationAttributes, verifyIdentity } from "../../services/SesService";
 
 const logger = rootLogger.child({
   module: "Identity",
@@ -27,7 +28,9 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
             "application/json": {
               schema: z.object({
                 identity: IdentitySchema.optional(),
-                tokens: z.array(z.string()),
+                status: z.enum(["Pending", "Success", "Failed", "TemporaryFailure", "NotStarted"]),
+                dkimTokens: z.array(z.string()).optional(),
+                dkimEnabled: z.boolean().optional(),
               }),
             },
           },
@@ -51,13 +54,14 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
         throw new NotFound("project");
       }
 
-      if (!project.email || !project.identity) {
-        return c.json({ identity: project.identity, tokens: [] }, 200);
+      if (!project.identity) {
+        logger.warn({ projectId: project.id }, "Project identity not found");
+        return c.json({ identity: project.identity, status: VerificationStatus.NotStarted }, 200);
       }
 
-      const attributes = await getIdentityVerificationAttributes(project.email);
+      const attributes = await getIdentityVerificationAttributes(project.identity);
 
-      if (attributes.status === "Success" && !project.identity.verified) {
+      if (attributes.status === VerificationStatus.Success && !project.identity.verified) {
         logger.info({ projectId: project.id, email: project.email }, "Project verified");
         // Update project verification status
         const updatedProject = {
@@ -67,7 +71,15 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
         await projectPersistence.put(updatedProject);
       }
 
-      return c.json({ identity: project.identity, tokens: attributes.tokens ?? [] }, 200);
+      return c.json(
+        {
+          identity: project.identity,
+          status: attributes.status,
+          dkimTokens: attributes.dkimTokens,
+          dkimEnabled: attributes.dkimEnabled,
+        },
+        200,
+      );
     },
   );
 
@@ -91,7 +103,7 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
         200: {
           content: {
             "application/json": {
-              schema: z.object({ tokens: z.array(z.string()) }),
+              schema: z.object({ dkimTokens: z.array(z.string()).optional() }),
             },
           },
           description: "Verify identity",
@@ -139,7 +151,7 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
       };
       await projectPersistence.put(updatedProject);
 
-      return c.json({ success: true, tokens: tokens ?? [] }, 200);
+      return c.json({ dkimTokens: tokens }, 200);
     },
   );
 
@@ -191,7 +203,7 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
   app.openapi(
     createRoute({
       method: "put",
-      path: "/projects/:projectId/identity/update",
+      path: "/projects/:projectId/identity",
       request: {
         params: z.object({
           projectId: z.string(),
@@ -208,10 +220,10 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
         200: {
           content: {
             "application/json": {
-              schema: z.object({ success: z.boolean() }),
+              schema: ProjectSchemas.get,
             },
           },
-          description: "Update project identity",
+          description: "Update project sending information",
         },
         400: getProblemResponseSchema(400),
         401: getProblemResponseSchema(401),
@@ -224,10 +236,8 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
     }),
     async (c) => {
       const body = await c.req.json();
-      const { from } = IdentitySchemas.update.parse(body);
+      const { from, email } = IdentitySchemas.update.parse(body);
       const projectId = c.req.param("projectId");
-
-      const _userId = c.get("auth").sub;
 
       const projectPersistence = new ProjectPersistence();
       let project = await projectPersistence.get(projectId);
@@ -240,9 +250,10 @@ export const registerProjectIdentityRoutes = (app: AppType) => {
       project = await projectPersistence.put({
         ...project,
         from,
+        email,
       });
 
-      return c.json({ success: true, data: project }, 200);
+      return c.json(ProjectSchemas.get.parse(project), 200);
     },
   );
 };

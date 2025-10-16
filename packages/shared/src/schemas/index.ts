@@ -5,6 +5,7 @@ export * from "./contact";
 export * from "./delivery-event";
 export * from "./email";
 export * from "./event";
+export * from "./group";
 export * from "./membership";
 export * from "./project";
 export * from "./subscriber";

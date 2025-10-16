@@ -39,7 +39,7 @@ export default function Modal({ title, description, isOpen, onToggle, onAction, 
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.7 }}
               transition={{ ease: "easeInOut", duration: 0.15 }}
-              className="relative z-40 inline-block transform overflow-hidden rounded-lg border border-black border-opacity-5 bg-white px-8 py-10 text-left align-bottom shadow-2xl sm:my-8 sm:w-full sm:max-w-xl sm:align-middle"
+              className="relative z-40 inline-block transform overflow-hidden rounded-lg border border-black border-opacity-5 bg-white px-8 py-10 text-left align-bottom shadow-2xl sm:my-8 sm:w-full sm:max-w-2xl sm:align-middle"
             >
               <div className="absolute right-0 top-0 hidden p-8 sm:block">
                 <button

@@ -1,36 +1,47 @@
-import type { Contact, Event } from "@sendra/shared";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
 import { Edit2, Plus } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Card, ContactForm, Dropdown, Empty, FullscreenLoader, Modal, Skeleton, Table } from "../../components";
 import { Dashboard } from "../../layouts";
-import { searchContacts, useContactsWithEvents } from "../../lib/hooks/contacts";
+import { useContacts } from "../../lib/hooks/contacts";
 import { useActiveProject } from "../../lib/hooks/projects";
 import { useUser } from "../../lib/hooks/users";
 
 export default function Index() {
-  const [cursor, setCursor] = useState<string>();
   const [query, setQuery] = useState<string>();
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const project = useActiveProject();
   const { data: user } = useUser();
-  const { data: contacts, mutate: mutateContacts } = useContactsWithEvents(cursor);
-  const { data: search } = searchContacts(query);
+  const { data: contacts, size, setSize, mutate: mutateContacts, isLoading, isValidating } = useContacts();
 
-  const [allContacts, setAllContacts] = useState<(Contact & { _embed: { events: Event[] } })[]>([]);
-
-  useEffect(() => {
-    if (contacts) {
-      setAllContacts((current) => [...(current ?? []), ...contacts.items]);
+  const hasMore = useMemo(() => {
+    if (!contacts || contacts.length === 0 || isLoading || isValidating) {
+      return false;
     }
-  }, [contacts]);
+    return Boolean(contacts[contacts.length - 1].cursor);
+  }, [contacts, isLoading, isValidating]);
+
+  const filterContacts = useMemo(() => {
+    return (
+      contacts
+        ?.flatMap((c) => c.items)
+        .filter((contact) => {
+          let allowed = true;
+          if (query) {
+            allowed = allowed && (contact.email.toLowerCase().includes(query.toLowerCase()) || Object.values(contact.data).some((v) => JSON.stringify(v).toLowerCase().includes(query.toLowerCase())));
+          }
+          if (statusFilter !== "all") {
+            return allowed && (statusFilter === "subscribed" ? contact.subscribed : !contact.subscribed);
+          }
+          return allowed;
+        }) ?? []
+    );
+  }, [contacts, query, statusFilter]);
 
   const resetContacts = useCallback(() => {
-    setAllContacts([]);
-    setCursor(undefined);
     mutateContacts();
   }, [mutateContacts]);
 
@@ -46,100 +57,28 @@ export default function Index() {
   };
 
   const renderContacts = () => {
-    if (!allContacts && !search) {
+    if (!contacts) {
       return <Skeleton type={"table"} />;
     }
 
-    if (query && !search) {
-      return <Skeleton type={"table"} />;
-    }
-
-    if (search && query !== undefined) {
-      const filtered = search.contacts.filter((c) => (statusFilter === "all" ? true : statusFilter === "subscribed" ? c.subscribed : !c.subscribed));
-
-      if (filtered.length > 0) {
-        return (
-          <Table
-            values={filtered
-              .sort((a, b) => {
-                const aTrigger = a._embed.events.length > 0 ? a._embed.events.sort()[0].createdAt : a.createdAt;
-
-                const bTrigger = b._embed.events.length > 0 ? b._embed.events.sort()[0].createdAt : b.createdAt;
-
-                return bTrigger > aTrigger ? 1 : -1;
-              })
-              .map((u) => {
-                return {
-                  Email: u.email,
-                  "Last Activity": dayjs()
-                    .to(
-                      [...u._embed.events, ...u._embed.emails].length > 0
-                        ? [...u._embed.events, ...u._embed.emails].sort((a, b) => {
-                            return a.createdAt > b.createdAt ? -1 : 1;
-                          })[0].createdAt
-                        : u.createdAt,
-                    )
-                    .toString(),
-                  Subscribed: u.subscribed,
-                  Edit: (
-                    <Link href={`/contacts/${u.id}`} className={"transition hover:text-neutral-800"}>
-                      <Edit2 size={18} />
-                    </Link>
-                  ),
-                };
-              })}
-          />
-        );
-      }
-      return (
-        <Empty
-          icon={
-            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-                d="M19.25 19.25L15.5 15.5M4.75 11C4.75 7.54822 7.54822 4.75 11 4.75C14.4518 4.75 17.25 7.54822 17.25 11C17.25 14.4518 14.4518 17.25 11 17.25C7.54822 17.25 4.75 14.4518 4.75 11Z"
-              />
-            </svg>
-          }
-          title={"No contacts found"}
-          description={`Your query ${query} did not return any contacts`}
-        />
-      );
-    }
-
-    if (allContacts) {
-      const filtered = allContacts.filter((c) => (statusFilter === "all" ? true : statusFilter === "subscribed" ? c.subscribed : !c.subscribed));
-
-      if (filtered.length > 0) {
+    if (contacts) {
+      if (filterContacts.length > 0) {
         return (
           <>
             <Table
-              values={filtered
+              values={filterContacts
                 .sort((a, b) => {
-                  const aTrigger = a._embed.events.length > 0 ? a._embed.events.sort()[0].createdAt : a.createdAt;
-
-                  const bTrigger = b._embed.events.length > 0 ? b._embed.events.sort()[0].createdAt : b.createdAt;
-
+                  const aTrigger = a.updatedAt;
+                  const bTrigger = b.updatedAt;
                   return bTrigger > aTrigger ? 1 : -1;
                 })
                 .map((u) => {
                   return {
                     Email: u.email,
-                    "Last Activity": dayjs()
-                      .to(
-                        u._embed.events.length > 0
-                          ? u._embed.events.sort((a, b) => {
-                              return a.createdAt > b.createdAt ? -1 : 1;
-                            })[0].createdAt
-                          : u.createdAt,
-                      )
-                      .toString(),
+                    "Last Updated": dayjs().to(u.updatedAt).toString(),
                     Subscribed: u.subscribed,
                     Edit: (
-                      <Link href={`/contacts/${u.id}`} className={"transition hover:text-neutral-800"}>
+                      <Link href={`/contacts/${u.id}`} className="transition hover:text-neutral-800">
                         <Edit2 size={18} />
                       </Link>
                     ),
@@ -149,15 +88,12 @@ export default function Index() {
             <nav className="flex items-center justify-between py-3" aria-label="Pagination">
               <div className="hidden sm:block">
                 <p className="text-sm text-neutral-700">
-                  Showing <span className="font-medium">{allContacts.length}</span> contacts
+                  Showing <span className="font-medium">{filterContacts.length}</span> contacts
                 </p>
               </div>
               <div className="flex flex-1 justify-between gap-1 sm:justify-end">
-                {contacts?.cursor && (
-                  <button
-                    onClick={() => setCursor(contacts.cursor)}
-                    className={"flex w-28 items-center justify-center gap-x-0.5 rounded bg-neutral-800 py-2 text-center text-sm font-medium text-white"}
-                  >
+                {hasMore && (
+                  <button onClick={() => setSize(size + 1)} className={"flex w-28 items-center justify-center gap-x-0.5 rounded bg-neutral-800 py-2 text-center text-sm font-medium text-white"}>
                     Load More
                   </button>
                 )}
@@ -177,16 +113,16 @@ export default function Index() {
       </Modal>
       <Dashboard>
         <Card
-          title={"Contacts"}
-          description={"View and manage your contacts"}
+          title="Contacts"
+          description="View and manage your contacts"
           actions={
-            <div className={"grid w-full gap-3 md:w-fit md:grid-cols-3"}>
+            <div className="grid w-full gap-3 md:w-fit md:grid-cols-3">
               <input
                 onChange={(e) => setQuery(e.target.value)}
-                autoComplete={"off"}
+                autoComplete="off"
                 type="search"
-                placeholder={"Search by email"}
-                className={"rounded border-neutral-300 transition ease-in-out focus:border-neutral-800 focus:ring-neutral-800 sm:text-sm"}
+                placeholder="Filter contacts"
+                className="rounded border-neutral-300 transition ease-in-out focus:border-neutral-800 focus:ring-neutral-800 sm:text-sm"
               />
 
               <Dropdown

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Home, LayoutTemplate, LineChart, LogOut, Send, Settings, TerminalSquare, Users2, Workflow } from "lucide-react";
+import { Home, LayoutTemplate, LineChart, LogOut, Send, Settings, TerminalSquare, User, Users2, Workflow } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { type ReactElement, useState } from "react";
@@ -42,7 +42,7 @@ const links: SidebarLinkType[] = [
     text: "Contacts",
     disabled: false,
     position: "top",
-    icon: <Users2 />,
+    icon: <User />,
   },
   {
     to: "/analytics",
@@ -85,6 +85,13 @@ const links: SidebarLinkType[] = [
     disabled: false,
     position: "top",
     icon: <Send />,
+  },
+  {
+    to: "/groups",
+    text: "Contact Groups",
+    disabled: false,
+    position: "top",
+    icon: <Users2 />,
   },
 ];
 
@@ -252,7 +259,7 @@ export default function Sidebar({ mobileOpen, onSidebarVisibilityChange }: Sideb
 
                     if (link.to === "/campaigns") {
                       return (
-                        <div className={"py-3"}>
+                        <div className={"pt-3"}>
                           <p className={"pb-1 text-sm font-semibold text-neutral-500"}>Campaigns</p>
                           <SidebarLink
                             key={`desktop-top-${link.to}`}

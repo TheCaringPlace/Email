@@ -94,6 +94,11 @@ export type EmbeddedObject<T> = T & {
 };
 
 export abstract class BasePersistence<T extends BaseItem> {
+  private readonly logger = rootLogger.child({
+    module: "BasePersistence",
+    type: this.type,
+  });
+
   constructor(
     private readonly type: string,
     private readonly schema: ZodType<T>,
@@ -127,20 +132,41 @@ export abstract class BasePersistence<T extends BaseItem> {
     if (ids.length === 0) {
       return [];
     }
-    const command = new BatchGetCommand({
-      RequestItems: {
-        [TABLE_NAME]: {
-          Keys: ids.map((id) => ({ id: id, type: this.type })),
-        },
-      },
-    });
-    const result = await docClient.send(command);
+    this.logger.debug({ ids: ids.length, type: this.type }, "Performing batch get");
 
-    const items: T[] = result.Responses?.[TABLE_NAME].filter((item) => item !== undefined) as T[];
-    if (!items) {
-      return [];
+    const allItems: T[] = [];
+    while (ids.length > 0) {
+      const batchIds = [];
+      while (ids.length > 0 && batchIds.length < 100) {
+        batchIds.push(ids.pop());
+      }
+      this.logger.debug({ batchIds, type: this.type }, "Getting batch of items");
+      const command = new BatchGetCommand({
+        RequestItems: {
+          [TABLE_NAME]: {
+            Keys: batchIds.map((id) => ({ id: id, type: this.type })),
+          },
+        },
+      });
+      const result = await docClient.send(command);
+
+      const items = result.Responses?.[TABLE_NAME].filter((item) => item !== undefined) as T[];
+
+      const unprocessedKeys = result.UnprocessedKeys?.[TABLE_NAME]?.Keys?.map((key) => key.id) ?? [];
+      this.logger.debug(
+        {
+          unprocessedKeys: unprocessedKeys.length,
+          items: items.length,
+          type: this.type,
+        },
+        "Batch result",
+      );
+
+      allItems.push(...items);
+      ids.push(...unprocessedKeys);
     }
-    return items.map((i) => this.schema.parse(i)) ?? [];
+
+    return allItems.map((i) => this.schema.parse(i));
   }
 
   @logMethodReturningPromise("BasePersistence")
@@ -198,13 +224,7 @@ export abstract class BasePersistence<T extends BaseItem> {
       Limit: limit,
       ExclusiveStartKey: cursor ? JSON.parse(Buffer.from(cursor, "base64").toString("ascii")) : undefined,
     };
-    const logger = rootLogger.child({
-      method: {
-        name: "findBy",
-        module: "BasePersistence",
-      },
-    });
-    logger.debug(config, "Executing query");
+    this.logger.debug(config, "Executing query");
     const command = new QueryCommand(config);
     const result = await docClient.send(command);
 

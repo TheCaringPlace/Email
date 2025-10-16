@@ -12,6 +12,8 @@ import type {
   EventSchema,
   EventSchemas,
   EventTypeSchema,
+  GroupSchema,
+  GroupSchemas,
   IdentitySchema,
   MembershipRoleSchema,
   MembershipSchema,
@@ -49,6 +51,10 @@ export type Email = z.infer<typeof EmailSchema>;
 export type Event = z.infer<typeof EventSchema>;
 export type EventType = z.infer<typeof EventTypeSchema>;
 export type EventTrack = z.infer<typeof EventSchemas.track>;
+
+export type Group = z.infer<typeof GroupSchema>;
+export type GroupCreate = z.infer<typeof GroupSchemas.create>;
+export type GroupUpdate = z.infer<typeof GroupSchemas.update>;
 
 export type Membership = z.infer<typeof MembershipSchema>;
 export type MembershipRole = z.infer<typeof MembershipRoleSchema>;

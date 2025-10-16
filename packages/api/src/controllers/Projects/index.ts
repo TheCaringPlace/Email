@@ -4,6 +4,7 @@ import { registerCampaignsRoutes } from "./Campaigns";
 import { registerContactsRoutes } from "./Contacts";
 import { registerEmailsRoutes } from "./Emails";
 import { registerEventsRoutes } from "./Events";
+import { registerGroupsRoutes } from "./Groups";
 import { registerProjectIdentityRoutes } from "./Identity";
 import { registerProjectInfoRoutes } from "./Info";
 import { registerProjectKeysRoutes } from "./Keys";
@@ -20,7 +21,8 @@ export const registerProjectRoutes = (app: AppType) => {
   registerActionsRoutes(app);
   registerCampaignsRoutes(app);
   registerContactsRoutes(app);
-  registerTemplatesRoutes(app);
+  registerGroupsRoutes(app);
   registerEmailsRoutes(app);
   registerEventsRoutes(app);
+  registerTemplatesRoutes(app);
 };

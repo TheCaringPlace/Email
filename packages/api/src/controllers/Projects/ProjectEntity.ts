@@ -37,7 +37,7 @@ export const registerProjectEntityReadRoutes = <T extends BaseItem>(
           projectId: z.string(),
         }),
         query: z.object({
-          limit: z.number().optional(),
+          limit: z.string().optional(),
           cursor: z.string().optional(),
           filter: config.listQuerySchema?.optional(),
           value: z.string().optional(),
