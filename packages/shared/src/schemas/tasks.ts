@@ -7,17 +7,10 @@ export const baseTaskSchema = z.object({
   payload: z.record(z.string(), z.any()),
 });
 
-export const BatchDeleteRelatedPayloadSchema = z.union([
-  z.object({
-    type: z.enum(["PROJECT", "USER"]),
-    id,
-  }),
-  z.object({
-    project: id,
-    type: z.enum(["EVENT_TYPE"]),
-    id,
-  }),
-]);
+export const BatchDeleteRelatedPayloadSchema = z.object({
+  type: z.enum(["PROJECT", "USER"]),
+  id,
+});
 
 export const BatchDeleteRelatedSchema = baseTaskSchema.extend({
   type: z.literal("batchDeleteRelated"),

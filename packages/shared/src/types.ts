@@ -11,7 +11,6 @@ import type {
   EmailSchema,
   EventSchema,
   EventSchemas,
-  EventTypeSchema,
   GroupSchema,
   GroupSchemas,
   IdentitySchema,
@@ -49,7 +48,6 @@ export type Credentials = z.infer<typeof UserSchemas.credentials>;
 export type DeliveryEvent = z.infer<typeof DeliveryEventSchema>;
 export type Email = z.infer<typeof EmailSchema>;
 export type Event = z.infer<typeof EventSchema>;
-export type EventType = z.infer<typeof EventTypeSchema>;
 export type EventTrack = z.infer<typeof EventSchemas.track>;
 
 export type Group = z.infer<typeof GroupSchema>;

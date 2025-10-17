@@ -2,12 +2,12 @@ import z from "zod";
 import { DataSchema, email, id, ProjectEntitySchema, subscribed } from "./common";
 
 export const EventSchema = ProjectEntitySchema.extend({
-  eventType: id,
+  eventType: z.string().min(1, "Event type can't be empty"),
   contact: id,
   relationType: z.enum(["ACTION", "CAMPAIGN"]).optional(),
   relation: id.optional(),
   email: id.optional(),
-  data: DataSchema.optional(),
+  data: z.record(z.string(), z.any()).optional(),
 });
 
 export const EventSchemas = {
@@ -56,7 +56,3 @@ export const EventSchemas = {
       .optional(),
   }),
 };
-
-export const EventTypeSchema = ProjectEntitySchema.extend({
-  name: z.string().min(1, "Name needs to be at least 1 character long"),
-});

@@ -1,56 +1,106 @@
 import { createRoute, z } from "@hono/zod-openapi";
-import { ActionsService, ContactPersistence, EmailPersistence, EmailService, EventPersistence, EventTypePersistence, ProjectPersistence, rootLogger } from "@sendra/lib";
-import { type Contact, type ContactSchemas, EventSchema, EventSchemas, EventTypeSchema, id } from "@sendra/shared";
+import { ActionsService, ContactPersistence, EmailPersistence, EmailService, EventPersistence, ProjectPersistence, rootLogger } from "@sendra/lib";
+import { type Contact, type ContactSchemas, type Event, EventSchema, EventSchemas, id } from "@sendra/shared";
 import type { AppType } from "../../app";
 import { BadRequest, HttpException, NotAllowed, NotFound } from "../../exceptions";
 import { getProblemResponseSchema } from "../../exceptions/responses";
 
-import { BearerAuth, isAuthenticatedProjectMemberKey } from "../../middleware/auth";
-import { registerProjectEntityReadRoutes } from "./ProjectEntity";
+import { BearerAuth, isAuthenticatedProjectMemberKey, isAuthenticatedProjectMemberOrSecretKey } from "../../middleware/auth";
+
+const logger = rootLogger.child({
+  module: "Events",
+});
 
 export const registerEventsRoutes = (app: AppType) => {
-  registerProjectEntityReadRoutes(app, {
-    entityPath: "event-types",
-    entityName: "EventType",
-    getSchema: EventTypeSchema.extend({
-      _embed: z
-        .object({
-          events: EventSchema.optional(),
-        })
-        .optional(),
-    }),
-    embeddable: ["events"],
-    listQuerySchema: z.string(),
-    getPersistence: (projectId: string) => new EventTypePersistence(projectId),
-  });
-
   app.openapi(
     createRoute({
-      id: "delete-event-type",
-      method: "delete",
-      path: "/projects/:projectId/event-types/:eventTypeId",
+      id: "list-all-event-types",
+      method: "get",
+      path: "/projects/:projectId/event-types/all",
       request: {
         params: z.object({
           projectId: z.string(),
-          eventTypeId: z.string(),
+        }),
+        query: z.object({
+          embed: z.enum(["events"]).optional(),
         }),
       },
       responses: {
         200: {
-          description: "Delete an event",
+          description: "List all event types",
+          content: {
+            "application/json": {
+              schema: z.object({
+                eventTypes: z.array(
+                  z.object({
+                    name: z.string(),
+                    _embed: z
+                      .object({
+                        events: z.array(EventSchema),
+                      })
+                      .optional(),
+                  }),
+                ),
+              }),
+            },
+          },
         },
-        400: getProblemResponseSchema(400),
-        401: getProblemResponseSchema(401),
-        404: getProblemResponseSchema(404),
-        403: getProblemResponseSchema(403),
       },
       ...BearerAuth,
-      middleware: [isAuthenticatedProjectMemberKey],
+      middleware: [isAuthenticatedProjectMemberOrSecretKey],
     }),
     async (c) => {
-      const { projectId, eventTypeId } = c.req.param();
-      await new EventTypePersistence(projectId).delete(eventTypeId);
-      return c.body(null, 200);
+      const { projectId } = c.req.param();
+      const projectPersistence = new ProjectPersistence();
+      const project = await projectPersistence.get(projectId);
+      if (!project) {
+        throw new NotFound("project");
+      }
+
+      const eventTypes: { name: string; _embed?: { events: Event[] } }[] = project.eventTypes.map((eventType) => ({
+        name: eventType,
+      }));
+
+      if (c.req.query("embed") === "events") {
+        const eventPersistence = new EventPersistence(projectId);
+
+        await Promise.all(
+          eventTypes.map(async (eventType) => {
+            const events = await eventPersistence.findAllBy({
+              key: "eventType",
+              value: eventType.name,
+            });
+            eventType._embed = { events: events as unknown as Event[] };
+          }),
+        );
+      }
+      return c.json({ eventTypes }, 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      id: "list-events",
+      method: "get",
+      path: "/projects/:projectId/events",
+      request: {
+        params: z.object({
+          projectId: z.string(),
+        }),
+      },
+      responses: {
+        200: {
+          description: "List events",
+        },
+      },
+      ...BearerAuth,
+      middleware: [isAuthenticatedProjectMemberOrSecretKey],
+    }),
+    async (c) => {
+      const { projectId } = c.req.param();
+      const eventPersistence = new EventPersistence(projectId);
+      const events = await eventPersistence.listAll();
+      return c.json(events, 200);
     },
   );
 
@@ -177,7 +227,7 @@ export const registerEventsRoutes = (app: AppType) => {
         });
       }
 
-      rootLogger.info({ to, project: project.name, count: to.length }, "Sent transactional emails");
+      logger.info({ to, project: project.name, count: to.length }, "Sent transactional emails");
 
       return c.json({ success: true, emails, timestamp: new Date().toISOString() }, 200);
     },
@@ -202,13 +252,13 @@ export const registerEventsRoutes = (app: AppType) => {
       },
       responses: {
         200: {
-          description: "Send an event",
+          description: "Track an event",
           content: {
             "application/json": {
               schema: z.object({
                 success: z.boolean(),
                 contact: id,
-                eventType: id,
+                eventType: z.string(),
                 event: id,
                 timestamp: z.string(),
               }),
@@ -235,7 +285,7 @@ export const registerEventsRoutes = (app: AppType) => {
       }
 
       if (!result.success) {
-        rootLogger.warn({ projectId, body }, "Tried tracking an event with invalid data");
+        logger.warn({ projectId, body }, "Tried tracking an event with invalid data");
         throw new BadRequest(result.error.issues[0].message);
       }
 
@@ -245,15 +295,10 @@ export const registerEventsRoutes = (app: AppType) => {
         throw new NotAllowed("subscribe & unsubscribe are reserved event names.");
       }
 
-      const eventTypePersistence = new EventTypePersistence(projectId);
-      let eventType = await eventTypePersistence.get(name);
-
-      if (!eventType) {
-        // Create eventType
-        eventType = await eventTypePersistence.create({
-          name,
-          project: projectId,
-        });
+      if (!project.eventTypes.includes(name)) {
+        logger.info({ projectId, eventType: name }, "Adding event type to project");
+        project.eventTypes.push(name);
+        await projectPersistence.put(project);
       }
 
       const contactPersistence = new ContactPersistence(projectId);
@@ -297,15 +342,15 @@ export const registerEventsRoutes = (app: AppType) => {
 
       // Create event
       const eventPersistence = new EventPersistence(projectId);
-      await eventPersistence.create({
-        eventType: eventType.id,
+      const event = await eventPersistence.create({
+        eventType: name,
         contact: contact.id as string,
         project: projectId,
         data: { ...dataToUpdate, ...(transientData ?? {}) },
       });
 
       await ActionsService.trigger({
-        eventType,
+        eventType: name,
         contact: contact as Contact,
         project,
       });
@@ -313,7 +358,7 @@ export const registerEventsRoutes = (app: AppType) => {
       rootLogger.info(
         {
           project: project.name,
-          event: eventType.name,
+          event: name,
           contact: contact.email,
         },
         "Triggered event",
@@ -323,8 +368,8 @@ export const registerEventsRoutes = (app: AppType) => {
         {
           success: true,
           contact: contact.id as string,
-          eventType: eventType.id as string,
-          event: eventType.name as string,
+          eventType: name,
+          event: event.id,
           timestamp: new Date().toISOString(),
         },
         200,

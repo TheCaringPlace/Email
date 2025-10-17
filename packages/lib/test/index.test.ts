@@ -51,7 +51,6 @@ describe("index", () => {
 		expect(lib).toHaveProperty("ContactPersistence");
 		expect(lib).toHaveProperty("EmailPersistence");
 		expect(lib).toHaveProperty("EventPersistence");
-		expect(lib).toHaveProperty("EventTypePersistence");
 		expect(lib).toHaveProperty("GroupPersistence");
 		expect(lib).toHaveProperty("MembershipPersistence");
 		expect(lib).toHaveProperty("ProjectPersistence");

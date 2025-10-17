@@ -3,7 +3,7 @@ import type { Action, ActionCreate } from "@sendra/shared";
 import { ActionSchemas } from "@sendra/shared";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { type FieldError, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Card, Dropdown, FullscreenLoader, Input, MultiselectDropdown, Toggle } from "../../components";
@@ -20,8 +20,10 @@ export default function Index() {
   const project = useActiveProject();
   const { mutate } = useActions();
   const { data: templates } = useTemplates();
-  const { data: eventTypes } = useEventTypes();
+  const { data: eventTypeData } = useEventTypes();
   const router = useRouter();
+
+  const eventTypes = useMemo(() => eventTypeData?.eventTypes ?? [], [eventTypeData]);
 
   const [delay, setDelay] = useState<{
     delay: number;
@@ -91,12 +93,12 @@ export default function Index() {
             <MultiselectDropdown
               onChange={(e) => setValue("events", e)}
               values={eventTypes
-                .filter((e) => !watch("notevents")?.includes(e.id))
+                .filter((e) => !watch("notevents")?.includes(e.name))
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .map((e) => {
                   return {
                     name: e.name,
-                    value: e.id,
+                    value: e.name,
                   };
                 })}
               selectedValues={watch("events")}
@@ -117,12 +119,12 @@ export default function Index() {
             <MultiselectDropdown
               onChange={(e) => setValue("notevents", e)}
               values={eventTypes
-                .filter((e) => !watch("events").includes(e.id))
+                .filter((e) => !watch("events").includes(e.name))
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .map((e) => {
                   return {
                     name: e.name,
-                    value: e.id,
+                    value: e.name,
                   };
                 })}
               selectedValues={watch("notevents")}

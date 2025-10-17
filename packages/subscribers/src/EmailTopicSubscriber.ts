@@ -1,4 +1,4 @@
-import { ActionsService, ContactPersistence, EmailPersistence, EventPersistence, EventTypePersistence, ProjectPersistence, rootLogger } from "@sendra/lib";
+import { ActionsService, ContactPersistence, EmailPersistence, EventPersistence, ProjectPersistence, rootLogger } from "@sendra/lib";
 import { type DeliveryEvent, DeliveryEventSchema, type Email } from "@sendra/shared";
 import type { SNSEvent, SNSEventRecord } from "aws-lambda";
 import type { Logger } from "pino";
@@ -11,35 +11,37 @@ const eventMap = {
   Reject: "REJECTED",
 } as Record<DeliveryEvent["eventType"], Email["status"]>;
 
-function serializeData(deliveryEvent: DeliveryEvent): Record<string, string | number | boolean | string[] | null> {
+function serializeData(deliveryEvent: DeliveryEvent): Record<string, unknown> {
   switch (deliveryEvent.eventType) {
     case "Bounce":
       return {
-        ...deliveryEvent.bounce,
-        recipients: JSON.stringify(deliveryEvent.bounce.recipients),
+        mail: deliveryEvent.mail,
+        details: deliveryEvent.bounce,
       };
     case "Complaint":
       return {
-        ...deliveryEvent.complaint,
-        complainedRecipients: JSON.stringify(deliveryEvent.complaint.complainedRecipients),
+        mail: deliveryEvent.mail,
+        details: deliveryEvent.complaint,
       };
     case "Delivery":
       return {
-        ...deliveryEvent.delivery,
-        recipients: JSON.stringify(deliveryEvent.delivery.recipients),
+        mail: deliveryEvent.mail,
+        details: deliveryEvent.delivery,
       };
     case "Open":
       return {
-        ...deliveryEvent.open,
+        mail: deliveryEvent.mail,
+        details: deliveryEvent.open,
       };
     case "Reject":
       return {
-        ...deliveryEvent.reject,
+        mail: deliveryEvent.mail,
+        details: deliveryEvent.reject,
       };
     case "Click":
       return {
-        ...deliveryEvent.click,
-        tags: JSON.stringify(deliveryEvent.click.tags),
+        mail: deliveryEvent.mail,
+        details: deliveryEvent.click,
       };
   }
   return {};
@@ -95,18 +97,14 @@ async function handleEmailEvent(deliveryEvent: DeliveryEvent, email: Email, logg
   }
 
   // add the event
-  const eventTypePersistence = new EventTypePersistence(project.id);
-  let eventType = await eventTypePersistence.getByName(deliveryEvent.eventType);
-  if (!eventType) {
-    logger.info({ project: project.id, eventType: deliveryEvent.eventType }, "Creating event type");
-    eventType = await eventTypePersistence.create({
-      name: deliveryEvent.eventType,
-      project: project.id,
-    });
+  const eventType = `email.${deliveryEvent.eventType.toLowerCase()}`;
+  if (!project.eventTypes.includes(eventType)) {
+    project.eventTypes.push(eventType);
+    await new ProjectPersistence().put(project);
   }
   const eventPersistence = new EventPersistence(project.id);
   await eventPersistence.create({
-    eventType: eventType.id,
+    eventType,
     contact: email.contact,
     project: project.id,
     relationType: email.sourceType,

@@ -1,7 +1,7 @@
 /// <reference path="../.sst/platform/config.d.ts" />
 
 import { dynamo } from "./dynamo";
-import { getEnvironment } from "./env";
+import { passEnvironmentVariables } from "./env";
 
 export const emailTopic = new sst.aws.SnsTopic("EmailTopic");
 
@@ -12,7 +12,15 @@ emailTopic.subscribe("EmailTopicSubscriber", {
   logging: {
     retention: "1 week",
   },
-  environment: getEnvironment("EmailTopicSubscriber"),
+  environment: {
+    EMAIL_CONFIGURATION_SET_NAME: `SendraConfigurationSet-${$app.stage}`,
+    ...passEnvironmentVariables([
+      "LOG_LEVEL",
+      "LOG_PRETTY",
+      "DEFAULT_EMAIL",
+      "APP_URL",
+    ]),
+  },
 });
 
 export const configurationSet: aws.ses.ConfigurationSet =

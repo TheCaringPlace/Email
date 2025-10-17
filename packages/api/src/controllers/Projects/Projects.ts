@@ -163,6 +163,7 @@ export const registerProjectCrudRoutes = (app: AppType) => {
         url,
         secret: randomUUID(),
         public: randomUUID(),
+        eventTypes: [],
       });
       await new MembershipPersistence().create({
         email: user.email,

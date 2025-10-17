@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Dropdown, MetadataFilterEditor, MultiselectDropdown, Skeleton } from "../../components";
 import { useEventTypes } from "../../lib/hooks/events";
 import { useActiveProject } from "../../lib/hooks/projects";
@@ -11,7 +11,8 @@ import type { ContactWithEvents, FilterQuery } from "./types";
  */
 export default function ContactFilterForm({ contacts, onSelect }: { contacts: ContactWithEvents[]; onSelect: (contacts: ContactWithEvents[]) => void }) {
   const project = useActiveProject();
-  const { data: eventTypes } = useEventTypes();
+  const { data: eventTypeData } = useEventTypes();
+  const eventTypes = useMemo(() => eventTypeData?.eventTypes ?? [], [eventTypeData]);
 
   const [query, setQuery] = useState<FilterQuery>({});
   const filteredContacts = useFilterContacts(contacts, query);
@@ -40,12 +41,12 @@ export default function ContactFilterForm({ contacts, onSelect }: { contacts: Co
           }
           values={[
             ...eventTypes
-              .filter((e) => !query.notevents?.includes(e.id))
+              .filter((e) => !query.notevents?.includes(e.name))
               .sort((a, b) => a.name.localeCompare(b.name))
               .map((e) => {
                 return {
                   name: e.name,
-                  value: e.id,
+                  value: e.name,
                 };
               }),
           ]}
@@ -96,12 +97,12 @@ export default function ContactFilterForm({ contacts, onSelect }: { contacts: Co
           }}
           values={[
             ...eventTypes
-              .filter((e) => !query.events?.includes(e.id))
+              .filter((e) => !query.events?.includes(e.name))
               .sort((a, b) => a.name.localeCompare(b.name))
               .map((e) => {
                 return {
                   name: e.name,
-                  value: e.id,
+                  value: e.name,
                 };
               }),
           ]}

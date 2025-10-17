@@ -1,7 +1,11 @@
-import type { Contact, EventType, Project } from "@sendra/shared";
+import type { Contact, Project } from "@sendra/shared";
 import { rootLogger } from "../logging";
-import { ActionPersistence, EventPersistence, TemplatePersistence } from "../persistence";
+import { ActionPersistence, EventPersistence, ProjectPersistence, TemplatePersistence } from "../persistence";
 import { TaskQueue } from "./TaskQueue";
+
+const logger = rootLogger.child({
+  module: "ActionsService",
+});
 
 export class ActionsService {
   /**
@@ -10,9 +14,9 @@ export class ActionsService {
    * @param event
    * @param project
    */
-  public static async trigger({ eventType, contact, project }: { eventType: EventType; contact: Contact; project: Project }) {
+  public static async trigger({ eventType, contact, project }: { eventType: string; contact: Contact; project: Project }) {
     const actionPersistence = new ActionPersistence(project.id);
-    const actions = await actionPersistence.listAll().then((actions) => actions.filter((action) => action.events.includes(eventType.id)));
+    const actions = await actionPersistence.listAll().then((actions) => actions.filter((action) => action.events.includes(eventType)));
 
     const eventPersistence = new EventPersistence(project.id);
     const contactEvents = await eventPersistence.findAllBy({
@@ -53,11 +57,18 @@ export class ActionsService {
         continue;
       }
 
-      // Create trigger in DynamoDB
+      if (!project.eventTypes.includes(eventType)) {
+        logger.info({ projectId: project.id, eventType }, "Adding event type to project");
+        const projectPersistence = new ProjectPersistence();
+        project.eventTypes.push(eventType);
+        await projectPersistence.put(project);
+      }
+
+      // Create event
       const event = {
         action: action.id,
         contact: contact.id,
-        eventType: eventType.id,
+        eventType: eventType,
         project: project.id,
       };
       await eventPersistence.create(event);
@@ -69,7 +80,7 @@ export class ActionsService {
       }
 
       if (!template) {
-        rootLogger.error({ actionId: action.id }, "Template not found");
+        logger.error({ actionId: action.id }, "Template not found");
         continue;
       }
 

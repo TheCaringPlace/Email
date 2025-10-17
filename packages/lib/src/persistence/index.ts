@@ -5,7 +5,6 @@ export { CampaignPersistence } from "./CampaignPersistence";
 export { ContactPersistence } from "./ContactPersistence";
 export { EmailPersistence } from "./EmailPersistence";
 export { EventPersistence } from "./EventPersistence";
-export { EventTypePersistence } from "./EventTypePersistence";
 export { GroupPersistence } from "./GroupPersistence";
 export { MembershipPersistence } from "./MembershipPersistence";
 export { ProjectPersistence } from "./ProjectPersistence";

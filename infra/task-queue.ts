@@ -1,4 +1,5 @@
-import { getEnvironment } from "./env";
+import { dynamo } from "./dynamo";
+import { passEnvironmentVariables } from "./env";
 
 const deadLetterQueue = new sst.aws.Queue("TaskDeadLetterQueue");
 
@@ -14,7 +15,22 @@ taskQueue.subscribe(
     logging: {
       retention: "1 week",
     },
-    environment: getEnvironment("TaskQueueSubscriber"),
+    link: [dynamo],
+    environment: {
+      EMAIL_CONFIGURATION_SET_NAME: `SendraConfigurationSet-${$app.stage}`,
+      ...passEnvironmentVariables([
+        "LOG_LEVEL",
+        "LOG_PRETTY",
+        "DEFAULT_EMAIL",
+        "APP_URL",
+      ]),
+    },
+    permissions: [
+      {
+        actions: ["ses:SendEmail", "ses:SendRawEmail"],
+        resources: ["*"],
+      },
+    ],
   },
   {
     batch: {

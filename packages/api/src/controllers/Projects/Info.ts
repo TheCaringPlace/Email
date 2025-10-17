@@ -1,6 +1,6 @@
 import { createRoute, z } from "@hono/zod-openapi";
-import { ActionPersistence, ContactPersistence, EmailPersistence, EventPersistence, EventTypePersistence, ProjectPersistence } from "@sendra/lib";
-import type { Action, Contact, Email, Event, EventType } from "@sendra/shared";
+import { ActionPersistence, ContactPersistence, EmailPersistence, EventPersistence, ProjectPersistence } from "@sendra/lib";
+import type { Action, Contact, Email, Event } from "@sendra/shared";
 import dayjs from "dayjs";
 import type { AppType } from "../../app";
 import { NotFound } from "../../exceptions";
@@ -208,11 +208,10 @@ export const registerProjectInfoRoutes = (app: AppType) => {
       const [events, emails] = await Promise.all([new EventPersistence(projectId).list(), new EmailPersistence(projectId).list()]);
 
       const contactsPersistence = new ContactPersistence(projectId);
-      const eventTypesPersistence = new EventTypePersistence(projectId);
+
       const actionsPersistence = new ActionPersistence(projectId);
       const actions: Record<string, Action> = {};
       const contacts: Record<string, Contact> = {};
-      const eventTypes: Record<string, EventType> = {};
 
       const getContact = async (id: string) => {
         if (contacts[id]) {
@@ -221,14 +220,6 @@ export const registerProjectInfoRoutes = (app: AppType) => {
         const contact = await contactsPersistence.get(id);
         contacts[id] = contact as Contact;
         return contact;
-      };
-      const getEventType = async (id: string) => {
-        if (eventTypes[id]) {
-          return eventTypes[id];
-        }
-        const eventType = await eventTypesPersistence.get(id);
-        eventTypes[id] = eventType as EventType;
-        return eventType;
       };
 
       const getAction = async (id: string | undefined) => {
@@ -246,7 +237,7 @@ export const registerProjectInfoRoutes = (app: AppType) => {
       // Get contact and event details for triggers
       const eventsWithDetails = await Promise.all(
         events.items.map(async (event: Event) => {
-          const [contact, eventType, action] = await Promise.all([getContact(event.contact), getEventType(event.eventType), getAction(event.relationType === "ACTION" ? event.relation : undefined)]);
+          const [contact, action] = await Promise.all([getContact(event.contact), getAction(event.relationType === "ACTION" ? event.relation : undefined)]);
           return {
             type: "trigger",
             id: event.id,
@@ -257,11 +248,9 @@ export const registerProjectInfoRoutes = (app: AppType) => {
                   email: contact.email,
                 }
               : undefined,
-            event: eventType
-              ? {
-                  name: eventType.name,
-                }
-              : undefined,
+            event: {
+              name: event.eventType,
+            },
             action: action
               ? {
                   name: action.name,

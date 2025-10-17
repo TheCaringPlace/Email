@@ -2,15 +2,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { EventSchemas } from "@sendra/shared";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
-import { Plus, TerminalSquare, Trash } from "lucide-react";
-import { useState } from "react";
+import { Plus, TerminalSquare } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Area, AreaChart, ResponsiveContainer, YAxis } from "recharts";
 import { toast } from "sonner";
 import { Badge, Card, Empty, FullscreenLoader, Input, Modal, Skeleton, Table } from "../../components";
 import { Dashboard } from "../../layouts";
 import { useAllContacts } from "../../lib/hooks/contacts";
-import { useEventTypesWithEvents } from "../../lib/hooks/events";
+import { type EventType, useEventTypesWithEvents } from "../../lib/hooks/events";
 import { useActiveProject } from "../../lib/hooks/projects";
 import { useUser } from "../../lib/hooks/users";
 import { network } from "../../lib/network";
@@ -26,7 +26,8 @@ export default function Index() {
   const project = useActiveProject();
   const { data: user } = useUser();
   const { data: contacts } = useAllContacts();
-  const { data: eventTypes, mutate } = useEventTypesWithEvents();
+  const { data: eventTypeData, mutate } = useEventTypesWithEvents();
+  const eventTypes = useMemo(() => eventTypeData?.eventTypes ?? [], [eventTypeData]);
 
   const [eventModal, setEventModal] = useState(false);
 
@@ -38,6 +39,17 @@ export default function Index() {
   } = useForm({
     resolver: zodResolver(EventSchemas.track.pick({ event: true })),
   });
+
+  const lastActivity = useCallback((e: EventType) => {
+    if (!e._embed || e._embed?.events.length === 0) {
+      return "N/A";
+    }
+    return dayjs(
+      e._embed.events.sort((a, b) => {
+        return b.createdAt > a.createdAt ? 1 : -1;
+      })[0].createdAt,
+    ).format("MM/YYYY");
+  }, []);
 
   if (!project || !user) {
     return <FullscreenLoader />;
@@ -65,22 +77,6 @@ export default function Index() {
     );
 
     setEventModal(false);
-  };
-
-  const remove = (id: string) => {
-    toast.promise(
-      network.fetch(`/projects/${project.id}/events/${id}`, {
-        method: "DELETE",
-      }),
-      {
-        loading: "Deleting your event",
-        success: () => {
-          void mutate();
-          return "Deleted your event";
-        },
-        error: "Could not delete your event!",
-      },
-    );
   };
 
   return (
@@ -124,9 +120,9 @@ export default function Index() {
               <Table
                 values={eventTypes
                   .sort((a, b) => {
-                    const aTrigger = a._embed.events.length > 0 ? a._embed.events.sort()[0].createdAt : a.createdAt;
+                    const aTrigger = a._embed.events.length > 0 ? a._embed.events.sort()[0].createdAt : a.name;
 
-                    const bTrigger = b._embed.events.length > 0 ? b._embed.events.sort()[0].createdAt : b.createdAt;
+                    const bTrigger = b._embed.events.length > 0 ? b._embed.events.sort()[0].createdAt : b.name;
 
                     return bTrigger > aTrigger ? 1 : -1;
                   })
@@ -194,15 +190,7 @@ export default function Index() {
                           </ResponsiveContainer>
                         </>
                       ),
-                      "Last Activity": dayjs()
-                        .to(
-                          e._embed.events.length > 0
-                            ? e._embed.events.sort((a, b) => {
-                                return b.createdAt > a.createdAt ? 1 : -1;
-                              })[0].createdAt
-                            : e.createdAt,
-                        )
-                        .toString(),
+                      "Last Activity": lastActivity(e),
                       Trigger: (
                         <button
                           onClick={() => {
@@ -230,12 +218,6 @@ export default function Index() {
                           <TerminalSquare size={18} />
                         </button>
                       ),
-
-                      Remove: (
-                        <button onClick={() => remove(e.id)} className={"flex items-center text-center text-sm font-medium transition hover:text-neutral-800"}>
-                          <Trash size={18} />
-                        </button>
-                      ),
                     };
                   })}
               />
@@ -252,9 +234,9 @@ export default function Index() {
               <Table
                 values={eventTypes
                   .sort((a, b) => {
-                    const aTrigger = a._embed.events.length > 0 ? a._embed.events.sort()[0].createdAt : a.createdAt;
+                    const aTrigger = a._embed.events.length > 0 ? a._embed.events.sort()[0].createdAt : a.name;
 
-                    const bTrigger = b._embed.events.length > 0 ? b._embed.events.sort()[0].createdAt : b.createdAt;
+                    const bTrigger = b._embed.events.length > 0 ? b._embed.events.sort()[0].createdAt : b.name;
 
                     return bTrigger > aTrigger ? 1 : -1;
                   })
@@ -267,15 +249,7 @@ export default function Index() {
                         >{`${e._embed.events.length > 0 ? Math.round(([...new Map(e._embed.events.map((t) => [t.contact, t])).values()].length / contacts.length) * 100) : 0}%`}</Badge>
                       ),
                       "Total times triggered": e._embed.events.length,
-                      "Last Activity": dayjs()
-                        .to(
-                          e._embed.events.length > 0
-                            ? e._embed.events.sort((a, b) => {
-                                return b.createdAt > a.createdAt ? 1 : -1;
-                              })[0].createdAt
-                            : e.createdAt,
-                        )
-                        .toString(),
+                      "Last Activity": lastActivity(e),
                     };
                   })}
               />

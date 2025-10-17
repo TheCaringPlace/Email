@@ -214,7 +214,8 @@ describe("EmailService", () => {
 			name: "Test Project",
 			createdAt: "",
 			updatedAt: "",
-			url: "https://example.com"
+			url: "https://example.com",
+			eventTypes: [],
 		};
 
 		const mockContact: Contact = {
@@ -407,7 +408,8 @@ describe("EmailService", () => {
 			name: "Test Project",
 			createdAt: "",
 			updatedAt: "",
-			url: ""
+			url: "",
+			eventTypes: [],
 		};
 		
 		const mockContact: Contact = {

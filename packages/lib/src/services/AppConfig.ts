@@ -60,7 +60,6 @@ const PersistenceConfigSchema = z.object({
 });
 
 export const getPersistenceConfig = () => {
-  console.log("process.env", process.env);
   const config = PersistenceConfigSchema.parse(process.env);
   if (config.PERSISTENCE_PROVIDER === "local") {
     if (!config.AWS_ACCESS_KEY_ID || !config.AWS_SECRET_ACCESS_KEY || !config.TABLE_NAME) {

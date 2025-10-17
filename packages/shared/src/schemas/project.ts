@@ -10,13 +10,14 @@ export const IdentitySchema = z.object({
 
 export const ProjectSchema = BaseSchema.extend({
   id,
-  name: z.string().min(1, "Name can't be empty"),
   email: email.optional(),
+  eventTypes: z.array(z.string()).default([]),
   from: z.string().optional(),
-  secret: z.string(),
-  public: z.string(),
-  url: z.url(),
   identity: IdentitySchema.optional(),
+  name: z.string().min(1, "Name can't be empty"),
+  public: z.string(),
+  secret: z.string(),
+  url: z.url(),
 });
 
 export const ProjectKeysSchema = z.object({

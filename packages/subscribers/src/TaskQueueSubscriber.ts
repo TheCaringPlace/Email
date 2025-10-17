@@ -24,8 +24,8 @@ export const handler = async (event: SQSEvent, _context: Context) => {
   for await (const record of event.Records) {
     try {
       await handleRecord(record);
-    } catch (error) {
-      rootLogger.error({ messageId: record.messageId, error }, "Failed to handle message");
+    } catch (err) {
+      rootLogger.error({ messageId: record.messageId, err }, "Failed to handle message");
       batchItemFailures.push({
         itemIdentifier: record.messageId,
       });

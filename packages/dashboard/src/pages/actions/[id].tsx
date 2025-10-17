@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Save, Trash } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { type FieldError, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Badge, Card, Dropdown, Empty, FullscreenLoader, Input, MultiselectDropdown, Toggle } from "../../components";
@@ -24,9 +24,11 @@ export default function Index() {
   const project = useActiveProject();
   const { mutate } = useActions();
   const { data: templates } = useTemplates();
-  const { data: eventTypes } = useEventTypes();
   const { data: action } = useAction(router.query.id as string);
+  const { data: eventTypeData } = useEventTypes();
   const { data: related } = useRelatedActions(router.query.id as string);
+
+  const eventTypes = useMemo(() => eventTypeData?.eventTypes ?? [], [eventTypeData]);
 
   const [delay, setDelay] = useState<{
     delay: number;
@@ -149,12 +151,12 @@ export default function Index() {
             <MultiselectDropdown
               onChange={(e) => setValue("events", e)}
               values={eventTypes
-                .filter((e) => !watch("notevents")?.includes(e.id))
+                .filter((e) => !watch("notevents")?.includes(e.name))
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .map((e) => {
                   return {
                     name: e.name,
-                    value: e.id,
+                    value: e.name,
                   };
                 })}
               selectedValues={watch("events")}
@@ -175,12 +177,12 @@ export default function Index() {
             <MultiselectDropdown
               onChange={(e) => setValue("notevents", e)}
               values={eventTypes
-                .filter((e) => !watch("events").includes(e.id))
+                .filter((e) => !watch("events").includes(e.name))
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .map((e) => {
                   return {
                     name: e.name,
-                    value: e.id,
+                    value: e.name,
                   };
                 })}
               selectedValues={watch("notevents")}
@@ -339,7 +341,7 @@ export default function Index() {
                       <div className={"text-sm"}>
                         <p className={"text-base font-semibold leading-tight text-neutral-800"}>{r.name}</p>
                         <p className={"text-neutral-500"}>
-                          Runs after {r.events.filter((e) => action.events.filter((a) => a === e).length > 0).map((e) => eventTypes.find((event) => event.id === e)?.name)} and{" "}
+                          Runs after {r.events.filter((e) => action.events.filter((a) => a === e).length > 0).map((e) => eventTypes.find((event) => event.name === e)?.name)} and{" "}
                           {
                             r.events.filter((e) => {
                               return action.events.filter((a) => a === e).length === 0;

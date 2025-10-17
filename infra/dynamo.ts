@@ -3,6 +3,7 @@ export const dynamo = new sst.aws.Dynamo("SendraDatabase", {
     id: "string",
     type: "string",
     email: "string",
+    messageId: "string",
     i_attr1: "string",
     i_attr2: "string",
     i_attr3: "string",

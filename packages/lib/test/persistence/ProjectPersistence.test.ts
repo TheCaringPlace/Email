@@ -58,6 +58,7 @@ describe("ProjectPersistence", () => {
         secret: "secret-123",
         public: "public-123",
         url: "https://test.example.com",
+        eventTypes: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -77,6 +78,7 @@ describe("ProjectPersistence", () => {
         secret: "secret-delete-1",
         public: "public-delete-1",
         url: "https://delete1.example.com",
+        eventTypes: [],
       });
 
       vi.mocked(TaskQueue.addTask).mockClear();
@@ -100,6 +102,7 @@ describe("ProjectPersistence", () => {
         url: "https://delete2.example.com",
         email: "contact@example.com",
         from: "noreply@example.com",
+        eventTypes: [],
       });
 
       vi.mocked(TaskQueue.addTask).mockClear();
@@ -123,6 +126,7 @@ describe("ProjectPersistence", () => {
         secret: "secret-key-123",
         public: "public-key-123",
         url: "https://example.com",
+        eventTypes: [],
       };
 
       const created = await persistence.create(projectData);
@@ -139,6 +143,7 @@ describe("ProjectPersistence", () => {
         secret: "secret-key-456",
         public: "public-key-456",
         url: "https://retrievable.example.com",
+        eventTypes: [],
       };
 
       const created = await persistence.create(projectData);
@@ -156,6 +161,7 @@ describe("ProjectPersistence", () => {
         secret: "secret-list-1",
         public: "public-list-1",
         url: "https://list1.example.com",
+        eventTypes: [],
       });
 
       await persistence.create({
@@ -163,6 +169,7 @@ describe("ProjectPersistence", () => {
         secret: "secret-list-2",
         public: "public-list-2",
         url: "https://list2.example.com",
+        eventTypes: [],
       });
 
       const result = await persistence.list({ limit: 10 });
@@ -179,6 +186,7 @@ describe("ProjectPersistence", () => {
         secret: "secret-update",
         public: "public-update",
         url: "https://original.example.com",
+        eventTypes: [],
       });
 
       const updated = await persistence.put({
@@ -202,6 +210,7 @@ describe("ProjectPersistence", () => {
           secret: "secret-embed-1",
           public: "public-embed-1",
           url: "https://embed1.example.com",
+          eventTypes: [],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -220,6 +229,7 @@ describe("ProjectPersistence", () => {
           secret: "secret-embed-2",
           public: "public-embed-2",
           url: "https://embed2.example.com",
+          eventTypes: [],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
