@@ -302,6 +302,7 @@ export default function Index() {
 
             <ContactSelector
               contacts={contacts}
+              initialSelectedContacts={campaign.recipients.map((r) => contacts.find((c) => c.id === r)).filter((c) => c !== undefined)}
               disabled={campaign.status !== "DRAFT"}
               label="Recipients"
               onChange={(recipients) =>

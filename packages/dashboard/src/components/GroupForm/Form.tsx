@@ -83,12 +83,8 @@ export function GroupForm({ groupId, onSuccess, initialData, submitButtonText = 
           disabled={false}
           label="Contacts"
           contacts={contacts}
-          onChange={(c) =>
-            setValue(
-              "contacts",
-              c.map((c) => c.id),
-            )
-          }
+          initialSelectedContacts={initialData?.contacts.map((cid) => contacts.find((c) => c.id === cid)).filter((c) => c !== undefined)}
+          onChange={(c) => setValue("contacts", c.map((c) => c.id))}
         />
       )}
 

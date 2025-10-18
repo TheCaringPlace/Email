@@ -8,17 +8,19 @@ import type { ContactWithEvents } from "./types";
 
 export default function ContactSelector({
   contacts,
+  initialSelectedContacts,
   disabled,
   label,
   onChange,
 }: {
   contacts: ContactWithEvents[];
+  initialSelectedContacts?: ContactWithEvents[];
   disabled: boolean;
   label: string;
   onChange: (selectedContacts: ContactWithEvents[]) => void;
 }) {
   const [advancedSelector, setAdvancedSelector] = useState(false);
-  const [selectedContacts, setSelectedContacts] = useState<ContactWithEvents[]>([]);
+  const [selectedContacts, setSelectedContacts] = useState<ContactWithEvents[]>(initialSelectedContacts ?? []);
 
   return (
     <>
