@@ -78,6 +78,9 @@ export default function Index() {
 
   const saveCampaign = useCallback(
     async (data: Omit<CampaignUpdate, "id">) => {
+      if (data.email?.trim() === "") {
+        delete data.email;
+      }
       if (!project || !campaign) {
         return;
       }

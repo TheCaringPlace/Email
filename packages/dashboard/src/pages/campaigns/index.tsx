@@ -1,28 +1,119 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { defaultTemplate } from "@sendra/shared";
+import { useTemplates } from "dashboard/src/lib/hooks/templates";
+import { network } from "dashboard/src/lib/network";
 import { motion } from "framer-motion";
-import { Plus, Send } from "lucide-react";
+import { Plus, Save, Send } from "lucide-react";
 import Link from "next/link";
-import { Badge, Card, Empty, Skeleton } from "../../components";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import z from "zod";
+import { Badge, Card, Dropdown, Empty, FullscreenLoader, Input, Modal, Skeleton } from "../../components";
 import { Dashboard } from "../../layouts";
 import { useCampaignsWithEmails } from "../../lib/hooks/campaigns";
+import { useActiveProject } from "../../lib/hooks/projects";
 
+const createCampaignFormSchema = z.object({
+  subject: z.string().min(1, "Subject is required"),
+  template: z.string().optional(),
+});
 /**
  *
  */
 export default function Index() {
-  const { data: campaigns } = useCampaignsWithEmails();
+  const { data: campaigns, mutate: campaignsMutate } = useCampaignsWithEmails();
+  const { data: templates } = useTemplates();
+  const [newCampaignModal, setNewCampaignModal] = useState<boolean>(false);
+  const project = useActiveProject();
+
+  const {
+    register,
+    handleSubmit: handleCreateSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+  } = useForm({
+    resolver: zodResolver(createCampaignFormSchema),
+    defaultValues: {
+      subject: "",
+      template: undefined,
+    },
+  });
+
+  if (!project || !templates) {
+    return <FullscreenLoader />;
+  }
+
+  const createCampaign = async (data: z.infer<typeof createCampaignFormSchema>) => {
+    toast.promise(
+      network.fetch(`/projects/${project.id}/campaigns`, {
+        method: "POST",
+        body: {
+          ...data,
+          body: templates.find((t) => t.id === data.template)?.body ?? defaultTemplate,
+          recipients: [],
+        },
+      }),
+      {
+        loading: "Creating new campaign",
+        success: () => {
+          void campaignsMutate();
+          return "Created new campaign";
+        },
+        error: "Could not create new campaign!",
+      },
+    );
+
+    setNewCampaignModal(false);
+  };
 
   return (
     <Dashboard>
+      <Modal isOpen={newCampaignModal} onToggle={() => setNewCampaignModal((s) => !s)} onAction={() => {}} type={"info"} title={"Create new campaign"} hideActionButtons={true}>
+        <form onSubmit={handleCreateSubmit(createCampaign)} className="flex flex-col gap-6">
+          <div>
+            <Input className={"sm:col-span-6"} label={"Subject"} placeholder={`Welcome to ${project.name}!`} register={register("subject")} error={errors.subject} />
+          </div>
+          <div>
+            <label htmlFor="template" className={"text-sm font-medium text-neutral-700"}>
+              Template
+            </label>
+            <br />
+            <Dropdown
+              className={"w-full"}
+              values={[{ name: "Default Template", value: "" }, ...templates.map((t) => ({ name: t.subject, value: t.id }))]}
+              selectedValue={watch("template") ?? ""}
+              onChange={(v) => setValue("template", v)}
+            />
+          </div>
+
+          <div className={"col-span-2 ml-auto flex justify-end gap-x-5"}>
+            <motion.button
+              type="submit"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.9 }}
+              className={"ml-auto mt-6 flex items-center gap-x-2 rounded bg-neutral-800 px-6 py-2 text-center text-sm font-medium text-white"}
+            >
+              <Save strokeWidth={1.5} size={18} />
+              Create Campaign
+            </motion.button>
+          </div>
+        </form>
+      </Modal>
       <Card
         title={"Campaigns"}
         description={"Send your contacts emails in bulk with a few clicks"}
         actions={
-          <Link href={"/campaigns/new"} passHref>
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.9 }} className={"flex items-center gap-x-1 rounded bg-neutral-800 px-8 py-2 text-center text-sm font-medium text-white"}>
-              <Plus strokeWidth={1.5} size={18} />
-              New
-            </motion.button>
-          </Link>
+          <motion.button
+            onClick={() => setNewCampaignModal(true)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.9 }}
+            className={"flex items-center gap-x-1 rounded bg-neutral-800 px-8 py-2 text-center text-sm font-medium text-white"}
+          >
+            <Plus strokeWidth={1.5} size={18} />
+            New
+          </motion.button>
         }
       >
         {campaigns ? (

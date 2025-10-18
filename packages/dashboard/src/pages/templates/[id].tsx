@@ -72,6 +72,9 @@ export default function Index() {
   }
 
   const update = (data: Omit<TemplateUpdate, "id">) => {
+    if (data.email?.trim() === "") {
+      delete data.email;
+    }
     toast.promise(
       network.fetch(`/projects/${project.id}/templates/${template.id}`, {
         method: "PUT",
