@@ -68,7 +68,14 @@ export const registerProjectInfoRoutes = (app: AppType) => {
         .toDate();
 
       // Get all contacts and emails for the project
-      const [allContacts, allEmails] = await Promise.all([new ContactPersistence(projectId).listAll(), new EmailPersistence(projectId).listAll()]);
+      const [allContacts, allEmails] = await Promise.all([
+        new ContactPersistence(projectId).listAll({
+          stop: (c) => dayjs(c.createdAt).isBefore(start),
+        }),
+        new EmailPersistence(projectId).listAll({
+          stop: (e) => dayjs(e.createdAt).isBefore(start),
+        }),
+      ]);
 
       // Basic contact analytics
       const subscribed = allContacts.filter((c) => c.subscribed).length;
@@ -186,9 +193,6 @@ export const registerProjectInfoRoutes = (app: AppType) => {
     async (c) => {
       const projectId = c.req.param("projectId");
 
-      const itemsPerPage = 10;
-      const skip = 0;
-
       // Get all triggers and emails for the project
       const [events, emails] = await Promise.all([new EventPersistence(projectId).list(), new EmailPersistence(projectId).list()]);
 
@@ -269,7 +273,7 @@ export const registerProjectInfoRoutes = (app: AppType) => {
       const combined = [...eventsWithDetails, ...emailsWithDetails];
       combined.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-      return c.json(combined.slice(skip, skip + itemsPerPage), 200);
+      return c.json(combined, 200);
     },
   );
 

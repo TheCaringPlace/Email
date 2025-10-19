@@ -1,5 +1,5 @@
 import { QueryCommand } from "@aws-sdk/client-dynamodb";
-import { BatchGetCommand, BatchWriteCommand, DeleteCommand, DynamoDBDocumentClient, GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
+import { BatchGetCommand, BatchWriteCommand, DeleteCommand, DynamoDBDocumentClient, GetCommand, PutCommand, type QueryCommandInput } from "@aws-sdk/lib-dynamodb";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import type { Action, Email, Event, Template } from "@sendra/shared";
 import { uuidv7 } from "uuidv7";
@@ -66,6 +66,8 @@ export type BaseItem = {
 };
 
 export type Embeddable = "actions" | "emails" | "events" | "templates";
+
+export type StopFn<T> = (item: T) => boolean;
 
 export type QueryParams = {
   key: string;
@@ -230,9 +232,10 @@ export abstract class BasePersistence<T extends BaseItem> {
           ":rk": typeof value === "string" ? { S: value } : typeof value === "number" ? { N: value.toString() } : value,
         }),
       },
+
       Limit: limit,
       ExclusiveStartKey: cursor ? JSON.parse(Buffer.from(cursor, "base64").toString("ascii")) : undefined,
-    };
+    } as QueryCommandInput;
     this.logger.debug(config, "Executing query");
     const command = new QueryCommand(config);
     const result = await this.docClient.send(command);
@@ -249,23 +252,40 @@ export abstract class BasePersistence<T extends BaseItem> {
   }
 
   @logMethodReturningPromise("BasePersistence")
-  async findAllBy(params: Omit<QueryParams, "limit" | "cursor">): Promise<EmbeddedObject<T>[]> {
+  async findAllBy(params: Omit<QueryParams, "limit" | "cursor"> & { stop?: StopFn<T> }): Promise<EmbeddedObject<T>[]> {
     const { embed } = params;
+    let stopped = false;
+    const items: EmbeddedObject<T>[] = [];
     const result = await this.findBy({
       ...params,
       limit: undefined,
       cursor: undefined,
     });
-    while (result.hasMore) {
+
+    for (const item of result.items) {
+      if (params.stop?.(item)) {
+        stopped = true;
+        break;
+      }
+      items.push(item);
+    }
+
+    while (result.hasMore && !stopped) {
       const nextResult = await this.findBy({
         ...params,
         cursor: result.cursor,
       });
-      result.items.push(...nextResult.items);
+      for (const item of result.items) {
+        if (params.stop?.(item)) {
+          stopped = true;
+          break;
+        }
+        items.push(item);
+      }
       result.cursor = nextResult.cursor;
       result.hasMore = nextResult.hasMore;
     }
-    return await this.embed(result.items, embed);
+    return await this.embed(items, embed);
   }
 
   @logMethodReturningPromise("BasePersistence")
@@ -309,7 +329,8 @@ export abstract class BasePersistence<T extends BaseItem> {
       },
       Limit: limit,
       ExclusiveStartKey: cursor ? JSON.parse(Buffer.from(cursor, "base64").toString("ascii")) : undefined,
-    });
+      ScanIndexForward: false,
+    } as QueryCommandInput);
     const result = await this.docClient.send(command);
 
     const items = result.Items?.map((item) => unmarshall(item) as T).map((i) => this.schema.parse(i)) ?? [];
@@ -323,13 +344,20 @@ export abstract class BasePersistence<T extends BaseItem> {
     };
   }
 
-  async listAll(options?: Pick<QueryParams, "embed">): Promise<EmbeddedObject<T>[]> {
-    const { embed } = options ?? {};
+  async listAll(options?: Pick<QueryParams, "embed"> & { stop?: StopFn<T> }): Promise<EmbeddedObject<T>[]> {
+    const { embed, stop } = options ?? {};
+    let stopped = false;
     const all: T[] = [];
     let cursor: string | undefined;
-    while (true) {
+    while (true && !stopped) {
       const result = await this.list({ limit: 100, cursor });
-      all.push(...result.items);
+      for (const item of result.items) {
+        if (stop?.(item)) {
+          stopped = true;
+          break;
+        }
+        all.push(item);
+      }
       cursor = result.cursor;
       if (!result.hasMore) {
         break;

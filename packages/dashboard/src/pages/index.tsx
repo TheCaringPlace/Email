@@ -1,7 +1,6 @@
 import dayjs from "dayjs";
 import { Book, Eye, Frown, LineChart, Send } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 import { Badge, Card, Empty, FullscreenLoader, Redirect, Skeleton, Table } from "../components";
 import { Dashboard } from "../layouts";
 import { useActiveProject, useActiveProjectFeed, useActiveProjectIdentity, useProjects } from "../lib/hooks/projects";
@@ -10,12 +9,10 @@ import { useActiveProject, useActiveProjectFeed, useActiveProjectIdentity, usePr
  *
  */
 export default function Index() {
-  const [feedPage, setFeedPage] = useState(1);
-
   const activeProject = useActiveProject();
   const { data: projects } = useProjects();
   const { data: projectIdentity } = useActiveProjectIdentity();
-  const { data: feed } = useActiveProjectFeed(feedPage);
+  const { data: feed } = useActiveProjectFeed();
 
   if (projects?.length === 0) {
     return <Redirect to={"/new"} />;
@@ -133,62 +130,51 @@ export default function Index() {
           feed.length === 0 ? (
             <Empty icon={<Frown size={24} />} title={"No feed yet"} description={"Send an email or track an event to see it here"} />
           ) : (
-            <>
-              <Table
-                values={feed.map((f) => {
-                  if ("messageId" in f && f.contact) {
-                    return {
-                      Email: f.contact?.email,
-                      Activity: <Badge type={"info"}>{`Email ${f.status.toLowerCase()}`}</Badge>,
-                      Type: <Badge type={"success"}>Email</Badge>,
-                      Time: dayjs().to(dayjs(f.createdAt)),
-                      View: f.contact && (
-                        <Link href={`/contacts/${f.contact?.id}`}>
-                          <Eye size={20} />
-                        </Link>
-                      ),
-                    };
-                  }
-                  if ("action" in f && f.action) {
-                    return {
-                      Email: f.contact?.email,
-                      Activity: <Badge type={"info"}>{f.action?.name}</Badge>,
-                      Type: <Badge type={"info"}>Action</Badge>,
-                      Time: dayjs().to(dayjs(f.createdAt)),
-                      View: f.contact && (
-                        <Link href={`/contacts/${f.contact.id}`}>
-                          <Eye size={20} />
-                        </Link>
-                      ),
-                    };
-                  }
-                  if ("event" in f && f.event) {
-                    return {
-                      Email: f.contact?.email,
-                      Activity: <Badge type={"info"}>{f.event.name}</Badge>,
-                      Type: <Badge type={"purple"}>Event</Badge>,
-                      Time: dayjs().to(dayjs(f.createdAt)),
-                      View: f.contact && (
-                        <Link href={`/contacts/${f.contact?.id}`}>
-                          <Eye size={20} />
-                        </Link>
-                      ),
-                    };
-                  }
+            <Table
+              values={feed.map((f) => {
+                if ("messageId" in f && f.contact) {
+                  return {
+                    Email: f.contact?.email,
+                    Activity: <Badge type={"info"}>{`Email ${f.status.toLowerCase()}`}</Badge>,
+                    Type: <Badge type={"success"}>Email</Badge>,
+                    Time: dayjs().to(dayjs(f.createdAt)),
+                    View: f.contact && (
+                      <Link href={`/contacts/${f.contact?.id}`}>
+                        <Eye size={20} />
+                      </Link>
+                    ),
+                  };
+                }
+                if ("action" in f && f.action) {
+                  return {
+                    Email: f.contact?.email,
+                    Activity: <Badge type={"info"}>{f.action?.name}</Badge>,
+                    Type: <Badge type={"info"}>Action</Badge>,
+                    Time: dayjs().to(dayjs(f.createdAt)),
+                    View: f.contact && (
+                      <Link href={`/contacts/${f.contact.id}`}>
+                        <Eye size={20} />
+                      </Link>
+                    ),
+                  };
+                }
+                if ("event" in f && f.event) {
+                  return {
+                    Email: f.contact?.email,
+                    Activity: <Badge type={"info"}>{f.event.name}</Badge>,
+                    Type: <Badge type={"purple"}>Event</Badge>,
+                    Time: dayjs().to(dayjs(f.createdAt)),
+                    View: f.contact && (
+                      <Link href={`/contacts/${f.contact?.id}`}>
+                        <Eye size={20} />
+                      </Link>
+                    ),
+                  };
+                }
 
-                  return {};
-                })}
-              />
-
-              <button
-                className={"mx-auto mt-5 block rounded border border-neutral-200 px-5 py-2.5 text-sm font-medium text-neutral-800 transition ease-in-out hover:bg-neutral-50"}
-                onClick={() => {
-                  setFeedPage(feedPage + 1);
-                }}
-              >
-                Load older
-              </button>
-            </>
+                return {};
+              })}
+            />
           )
         ) : (
           <Skeleton type={"table"} />
