@@ -32,6 +32,9 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
+    env:
+      SST_PRINT_LOGS: 1
+      SST_STAGE: production
     needs:
       - validate
     steps:
@@ -49,6 +52,7 @@ jobs:
           role-to-assume: ${{ secrets.GH_TRUST_ROLE }}
           role-duration-seconds: 3600
           aws-region: us-east-2
+
       - name: Install Dependencies
         run: npm ci
 
