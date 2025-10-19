@@ -40,7 +40,6 @@ export default function Index() {
 
   const login = async (data: Credentials) => {
     setSubmitted(true);
-    debugger;
     try {
       const response = await fetch(`${API_URI}/auth/login`, {
         method: "POST",
@@ -54,7 +53,6 @@ export default function Index() {
         return router.push(body.resetUrl ?? "/");
       }
       if (!response.ok) {
-        const body = await response.json();
         setError("email", { message: "login failed" });
         setSubmitted(false);
         return;

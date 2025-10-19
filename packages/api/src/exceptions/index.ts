@@ -4,7 +4,7 @@ export class HttpException extends Error {
   public constructor(
     public readonly code: ContentfulStatusCode,
     message: string,
-    public readonly addl?: Record<string, any>,
+    public readonly addl?: Record<string, unknown>,
   ) {
     super(message);
   }

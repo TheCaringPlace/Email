@@ -22,7 +22,7 @@ export default function Index() {
   } = useForm({
     resolver: zodResolver(UserSchemas.credentials.pick({ password: true })),
   });
-  
+
   if (!router.isReady) {
     return <FullscreenLoader />;
   }

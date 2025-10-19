@@ -11,5 +11,4 @@ export const UserSchema = BaseSchema.extend({
 export const UserSchemas = {
   credentials: UserSchema.pick({ email: true }).extend({ password }),
   get: UserSchema.omit({ password: true }),
-  
 };
