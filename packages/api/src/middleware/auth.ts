@@ -43,8 +43,8 @@ export const isAuthenticatedProjectMemberKey = createMiddleware(async (c, next) 
 
   const auth = AuthService.parseToken(c, { project });
   if (auth.type === "secret" || auth.type === "public") {
-    if (project.id !== auth.sub || (project.secret !== auth.kid && project.public !== auth.kid)) {
-      throw new HttpException(403, "Project not found");
+    if (project.id !== auth.sub) {
+      throw new HttpException(404, "Project not found");
     }
   } else {
     const membershipPersistence = new MembershipPersistence();
