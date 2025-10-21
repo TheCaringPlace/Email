@@ -68,3 +68,4 @@ jobs:
         env:
           APP_URL: ${{ secrets.APP_URL }}
           DEFAULT_EMAIL: ${{ secrets.DEFAULT_EMAIL }}
+          DISABLE_SIGNUPS: true

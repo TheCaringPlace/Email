@@ -43,7 +43,7 @@ export default function Index() {
     setProject(activeProject);
   }
 
-  if (!project || !projects || !memberships || !user) {
+  if (!project || !projects || !user || !memberships || !memberships.members) {
     return <FullscreenLoader />;
   }
 

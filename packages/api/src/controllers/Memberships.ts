@@ -67,7 +67,7 @@ export const registerMembershipsRoutes = (app: AppType) => {
 
       await membershipPersistence.create({
         email,
-        user: invitedUser?.id ?? "",
+        user: invitedUser?.id ?? "NEW_USER",
         project: projectId,
         role,
       });
