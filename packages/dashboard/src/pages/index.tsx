@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { Book, Eye, Frown, LineChart, Send } from "lucide-react";
+import { Book, Eye, Frown, Globe, LineChart, LineChartIcon, Send } from "lucide-react";
 import Link from "next/link";
 import { Badge, Card, Empty, FullscreenLoader, Redirect, Skeleton, Table } from "../components";
 import { Dashboard } from "../layouts";
@@ -47,17 +47,7 @@ export default function Index() {
             <>
               <div>
                 <span className="inline-flex rounded bg-neutral-100 p-3 text-neutral-800 ring-4 ring-white">
-                  <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <circle cx="12" cy="12" r="7.25" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-                    <path
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="1.5"
-                      d="M15.25 12C15.25 16.5 13.2426 19.25 12 19.25C10.7574 19.25 8.75 16.5 8.75 12C8.75 7.5 10.7574 4.75 12 4.75C13.2426 4.75 15.25 7.5 15.25 12Z"
-                    />
-                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M5 12H12H19" />
-                  </svg>
+                  <Globe size={20} />
                 </span>
               </div>
               <div className="mt-8">
@@ -74,9 +64,7 @@ export default function Index() {
           )}
 
           <span className="pointer-events-none absolute right-6 top-6 text-neutral-300 transition group-hover:text-neutral-400" aria-hidden="true">
-            <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M20 4h1a1 1 0 00-1-1v1zm-1 12a1 1 0 102 0h-2zM8 3a1 1 0 000 2V3zM3.293 19.293a1 1 0 101.414 1.414l-1.414-1.414zM19 4v12h2V4h-2zm1-1H8v2h12V3zm-.707.293l-16 16 1.414 1.414 16-16-1.414-1.414z" />
-            </svg>
+            <Globe size={20} />
           </span>
         </div>
 
@@ -96,9 +84,7 @@ export default function Index() {
             <p className="mt-2 text-sm text-neutral-500">Discover insights about your emails</p>
           </div>
           <span className="pointer-events-none absolute right-6 top-6 text-neutral-300 transition group-hover:text-neutral-400" aria-hidden="true">
-            <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M20 4h1a1 1 0 00-1-1v1zm-1 12a1 1 0 102 0h-2zM8 3a1 1 0 000 2V3zM3.293 19.293a1 1 0 101.414 1.414l-1.414-1.414zM19 4v12h2V4h-2zm1-1H8v2h12V3zm-.707.293l-16 16 1.414 1.414 16-16-1.414-1.414z" />
-            </svg>
+            <LineChartIcon size={20} />
           </span>
         </div>
 
@@ -110,7 +96,7 @@ export default function Index() {
           </div>
           <div className="mt-2 flex h-4/6 flex-col justify-end">
             <h3 className="text-lg font-medium">
-              <a href={"https://github.com/Service-Unit-469/Sendra"} target={"_blank"} className="focus:outline-none" rel="noreferrer">
+              <a href="https://github.com/Service-Unit-469/Sendra/blob/main/docs/index.md" target="_blank" className="focus:outline-none" rel="noreferrer">
                 <span className="absolute inset-0" aria-hidden="true" />
                 Documentation
               </a>
@@ -118,9 +104,7 @@ export default function Index() {
             <p className="mt-2 text-sm text-neutral-500">Discover how to use Sendra</p>
           </div>
           <span className="pointer-events-none absolute right-6 top-6 text-neutral-300 transition group-hover:text-neutral-400" aria-hidden="true">
-            <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M20 4h1a1 1 0 00-1-1v1zm-1 12a1 1 0 102 0h-2zM8 3a1 1 0 000 2V3zM3.293 19.293a1 1 0 101.414 1.414l-1.414-1.414zM19 4v12h2V4h-2zm1-1H8v2h12V3zm-.707.293l-16 16 1.414 1.414 16-16-1.414-1.414z" />
-            </svg>
+            <Book size={20} />
           </span>
         </div>
       </div>
