@@ -75,11 +75,11 @@ export default function Index() {
       }),
       {
         loading: "Verifying identity",
-        success: (res) => {
-          void identityMutate({ status: "Pending", dkimTokens: res.dkimTokens, identity: { ...projectIdentity.identity, verified: true } }, { revalidate: false });
+        success: () => {
+          void identityMutate();
           void projectsMutate();
 
-          return "Identity verified";
+          return "Identity updated successfully";
         },
         error: "Could not verify identity",
       },
