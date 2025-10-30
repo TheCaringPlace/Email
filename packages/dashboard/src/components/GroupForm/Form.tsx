@@ -1,15 +1,16 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type GroupCreate, GroupSchemas } from "@sendra/shared";
-import { ContactSelector } from "dashboard/src/components/ContactSelector";
-import { useAllContacts } from "dashboard/src/lib/hooks/contacts";
-import { useActiveProject } from "dashboard/src/lib/hooks/projects";
-import { network } from "dashboard/src/lib/network";
 import { motion } from "framer-motion";
 import { Save } from "lucide-react";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Input, Skeleton } from "..";
+import { useAllContacts } from "../../lib/hooks/contacts";
+import { useActiveProject } from "../../lib/hooks/projects";
+import { network } from "../../lib/network";
+import ContactSelector from "../ContactSelector/ContactSelector";
+import Input from "../Input/Input/Input";
+import Skeleton from "../Skeleton/Skeleton";
 
 export type GroupFormProps = {
   groupId?: string;

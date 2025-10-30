@@ -2,11 +2,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { TemplateCreate } from "@sendra/shared";
 import { defaultTemplate, TemplateSchemas } from "@sendra/shared";
 import { AnimatePresence, motion } from "framer-motion";
+import { Plus } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Card, Dropdown, EmailEditor, FullscreenLoader, Input, Toggle, Tooltip } from "../../components";
+import Card from "../../components/Card/Card";
+import { EmailEditor } from "../../components/EmailEditor";
+import Dropdown from "../../components/Input/Dropdown/Dropdown";
+import Input from "../../components/Input/Input/Input";
+import Toggle from "../../components/Input/Toggle/Toggle";
+import FullscreenLoader from "../../components/Utility/FullscreenLoader/FullscreenLoader";
+import Tooltip from "../../components/Utility/Tooltip/Tooltip";
 import { Dashboard } from "../../layouts";
 import { useActiveProject, useActiveProjectIdentity } from "../../lib/hooks/projects";
 import { useTemplates } from "../../lib/hooks/templates";
@@ -108,13 +115,6 @@ export default function Index() {
                     </ul>
                   </>
                 }
-                icon={
-                  <>
-                    <path d="M12 16v.01" />
-                    <path d="M12 13a2.003 2.003 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" />
-                    <circle cx="12" cy="12" r="9" />
-                  </>
-                }
               />
             </label>
             <Dropdown
@@ -155,13 +155,6 @@ export default function Index() {
                         Include <code className="bg-neutral-700 px-1 rounded">{"{{quickBody}}"}</code> or <code className="bg-neutral-700 px-1 rounded">{"{{{quickBody}}}"}</code> in your template
                         where you want the campaign body to be inserted.
                       </p>
-                    </>
-                  }
-                  icon={
-                    <>
-                      <path d="M12 16v.01" />
-                      <path d="M12 13a2.003 2.003 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" />
-                      <circle cx="12" cy="12" r="9" />
                     </>
                   }
                 />
@@ -207,10 +200,7 @@ export default function Index() {
             </motion.button>
 
             <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.9 }} className={"flex items-center gap-x-0.5 rounded bg-neutral-800 px-8 py-2 text-center text-sm font-medium text-white"}>
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 5.75V18.25" />
-                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M18.25 12L5.75 12" />
-              </svg>
+              <Plus size={18} />
               Create
             </motion.button>
           </div>
