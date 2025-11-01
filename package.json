@@ -37,7 +37,7 @@
     "packages/dashboard"
   ],
   "dependencies": {
-    "sst": "3.17.14",
+    "sst": "^3.17.21",
     "tailwindcss": "^4.1.16"
   },
   "overrides": {
