@@ -8,10 +8,12 @@
     "npm": ">=9.8.x"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.0",
+    "@biomejs/biome": "^2.3.2",
     "@playwright/test": "^1.56.1",
     "@types/node": "^24.9.2",
-    "rimraf": "^5.0.9"
+    "@vitest/coverage-v8": "^4.0.6",
+    "rimraf": "^6.1.0",
+    "vitest": "^4.0.6"
   },
   "scripts": {
     "build": "npm run build --workspaces",
@@ -32,14 +34,11 @@
     "packages/lib",
     "packages/api",
     "packages/subscribers",
-    "packages/dashboard",
-    "packages/cli"
+    "packages/dashboard"
   ],
   "dependencies": {
-    "@vitest/coverage-v8": "^4.0.2",
     "sst": "3.17.14",
-    "tailwindcss": "^4.1.16",
-    "vitest": "^4.0.2"
+    "tailwindcss": "^4.1.16"
   },
   "overrides": {
     "uglify-js": "npm:dry-uninstall",
