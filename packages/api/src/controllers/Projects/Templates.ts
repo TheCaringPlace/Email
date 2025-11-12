@@ -1,9 +1,8 @@
 import { z } from "@hono/zod-openapi";
 import { ActionPersistence, TemplatePersistence } from "@sendra/lib";
 import { ActionSchema, TemplateSchema, TemplateSchemas } from "@sendra/shared";
-import { validateTemplate } from "@sendra/templating";
 import type { AppType } from "../../app";
-import { BadRequest, NotAllowed } from "../../exceptions";
+import { HttpException, NotAllowed } from "../../exceptions";
 import { registerProjectEntityCrudRoutes } from "./ProjectEntity";
 import { validateEmail } from "./utils";
 
@@ -25,15 +24,28 @@ export const registerTemplatesRoutes = (app: AppType) => {
     getPersistence: (projectId: string) => new TemplatePersistence(projectId),
     preCreateEntity: async (projectId, template) => {
       await validateEmail(projectId, template.email);
+
+      // Validate quick email templates contain the required token
+      if (template.quickEmail) {
+        const hasQuickBodyToken = /\{\{\{?quickBody\}\}\}?/.test(template.body.html);
+        if (!hasQuickBodyToken) {
+          throw new HttpException(400, "Quick email templates must contain {{quickBody}} or {{{quickBody}}} token in the HTML body");
+        }
+      }
+
       return template;
     },
     preUpdateEntity: async (projectId, template) => {
       await validateEmail(projectId, template.email);
-      try {
-        validateTemplate(template.body);
-      } catch (error) {
-        throw new BadRequest(`Invalid template: ${(error as Error).message ?? ""}`);
+
+      // Validate quick email templates contain the required token
+      if (template.quickEmail) {
+        const hasQuickBodyToken = /\{\{\{?quickBody\}\}\}?/.test(template.body.html);
+        if (!hasQuickBodyToken) {
+          throw new HttpException(400, "Quick email templates must contain {{quickBody}} or {{{quickBody}}} token in the HTML body");
+        }
       }
+
       return template;
     },
     preDeleteEntity: async (projectId, template) => {
