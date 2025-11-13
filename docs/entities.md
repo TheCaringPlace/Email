@@ -16,6 +16,7 @@ This guide describes all the key entities in Sendra, their properties, relations
   - [Group](#group)
   - [Template](#template)
   - [Campaign](#campaign)
+  - [Asset](#asset)
 - [Automation](#automation)
   - [Event](#event)
   - [Action](#action)
@@ -169,6 +170,47 @@ Campaigns can target specific contacts or entire groups. They support delayed se
 }
 ```
 
+---
+
+### Asset
+
+**Purpose:** Files (images and attachments) stored in your project for use in email templates.
+
+**Asset Types:**
+- **IMAGE**: Images that can be embedded in email templates (PNG, JPG, GIF, SVG, etc.)
+- **ATTACHMENT**: Files that can be attached to or linked in emails (PDF, DOC, etc.)
+
+Assets are stored in AWS S3 and accessed via pre-signed URLs. Each asset has a unique ID, name, size, and MIME type. Assets can be uploaded through the dashboard or API, and are automatically managed for security and access control.
+
+**Relationships:**
+- Belongs to one project
+- Referenced by templates
+- Can be used in campaigns and transactional emails
+
+**Storage:**
+- Files are stored in S3 with project-level isolation
+- URLs are pre-signed for security
+- Asset metadata is tracked (name, size, type)
+
+**Example Asset:**
+```json
+{
+  "id": "YXNzZXQtaWQtMTIz",
+  "project": "proj456",
+  "name": "welcome-banner.png",
+  "size": 245678,
+  "mimeType": "image/png",
+  "url": "https://assets-bucket.s3.amazonaws.com/proj456/welcome-banner.png"
+}
+```
+
+**Use Cases:**
+- Company logos in email headers
+- Product images in promotional emails
+- PDF attachments for invoices or guides
+- Banner images for campaigns
+- Icons and graphics for email design
+
 ## Automation
 
 ### Event
@@ -298,11 +340,11 @@ Delivery events are populated by AWS SES notifications and are used for tracking
 ```
 User ←→ Membership ←→ Project
                         ↓
-        ┌───────────────┼───────────────┐
-        ↓               ↓               ↓
-  Contact ←→ Group   Template        Campaign
-        ↓               ↑               ↓
-     Event   →      Action          Email
+        ┌───────────────┼───────────────┬───────────┐
+        ↓               ↓               ↓           ↓
+  Contact ←→ Group   Template        Campaign    Asset
+        ↓               ↑               ↓           ↓
+     Event   →      Action          Email    → Templates
                                         ↓
                                 DeliveryEvent
 ```

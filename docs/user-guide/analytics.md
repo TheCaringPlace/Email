@@ -4,6 +4,8 @@
 
 Track email performance and engagement.
 
+![Analytics Page](../images/analytics-page.png)
+
 ### Accessing Analytics
 
 Navigate to **Analytics** from the main menu.

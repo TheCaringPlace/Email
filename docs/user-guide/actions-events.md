@@ -4,6 +4,8 @@
 
 Actions are automated email workflows triggered by events.
 
+![Actions List](../images/actions-list.png)
+
 ### Understanding Actions
 
 Actions create "if-then" rules:
@@ -105,6 +107,8 @@ View action activity:
 ## Events
 
 Events track user actions and behaviors.
+
+![Events List](../images/events-list.png)
 
 ### Understanding Events
 

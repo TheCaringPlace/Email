@@ -13,6 +13,7 @@ This guide covers how to use the Sendra dashboard to manage your email infrastru
 
 - [Actions & Events](./user-guide/actions-events.md)
 - [Analytics](./user-guide/analytics.md)
+- [Assets](./user-guide/assets.md)
 - [Campaigns](./user-guide/campaigns.md)
 - [Contacts & Groups](./user-guide/contacts-groups.md)
 - [Project Settings](./user-guide/project-settings.md)
@@ -34,6 +35,10 @@ Navigate to your deployed Sendra dashboard URL (e.g., `https://your-cloudfront-u
 5. Enter the verification code to activate your account
 6. Log in with your credentials
 
+![Login Page](./images/login-page.png)
+
+![Signup Page](./images/signup-page.png)
+
 ### Creating Your First Project
 
 After logging in for the first time:
@@ -44,6 +49,8 @@ After logging in for the first time:
 4. Click **"Create Project"**
 
 ## Dashboard Overview
+
+![Dashboard Home](./images/dashboard-home.png)
 
 The main dashboard provides quick access to:
 
@@ -68,6 +75,7 @@ The activity feed shows recent:
 - **Contacts**: Manage your email recipients
 - **Groups**: Organize contacts into segments
 - **Templates**: Create reusable email templates
+- **Assets**: Upload and manage images and files
 - **Actions**: Set up email automations
 - **Campaigns**: Create and send broadcasts
 - **Events**: Track user behaviors
@@ -84,6 +92,8 @@ If you forget your password:
 4. Check email for reset code
 5. Enter code and new password
 6. Log in with new password
+
+![Forgot Password Page](./images/forgot-password-page.png)
 
 ## Getting Help
 

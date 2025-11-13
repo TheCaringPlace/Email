@@ -9,6 +9,7 @@ This guide covers how to integrate with the Sendra API for sending emails, manag
 - [Introduction](#introduction)
 - [OpenAPI Specification](#openapi-specification)
 - [API Patterns](#api-patterns)
+- [Assets](#assets)
 - [Authentication](#authentication)
 
 ## Introduction
@@ -218,7 +219,6 @@ curl -X POST https://your-api-url.amazonaws.com/{{project.id}}/track \
 **Security Best Practices:**
 - Never expose secret keys in client-side code
 - Rotate keys if compromised
-
 
 ## Next Steps
 

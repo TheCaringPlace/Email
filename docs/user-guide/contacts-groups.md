@@ -4,6 +4,8 @@
 
 Contacts are your email recipients.
 
+![Contacts List](../images/contacts-list.png)
+
 ### Viewing Contacts
 
 Navigate to **Contacts** to see:
@@ -25,6 +27,8 @@ Navigate to **Contacts** to see:
 ## Groups
 
 Groups organize contacts to make it easier to send campaigns to multiple contacts at once
+
+![Groups List](../images/groups-list.png)
 
 ### Creating a Group
 

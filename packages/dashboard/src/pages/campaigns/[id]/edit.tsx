@@ -123,11 +123,7 @@ export default function Index() {
     [project, campaign, campaignMutate, router],
   );
 
-  if (!router.isReady) {
-    return <FullscreenLoader />;
-  }
-
-  if (!project || !campaign || !template) {
+  if (!router.isReady || !project || !campaign || !template) {
     return <FullscreenLoader />;
   }
 

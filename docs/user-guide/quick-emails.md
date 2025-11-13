@@ -31,12 +31,10 @@ Quick emails allow you to send campaigns using a simple rich text editor instead
 4. Click **"Create Campaign"**
 5. Add recipients (contacts or groups)
 6. Write your message using the rich text editor with formatting options:
-   - **Bold**, *Italic*, Underline, ~~Strikethrough~~
-   - Headings (H1, H2)
+   - **Bold**, *Italic*
    - Bullet lists and numbered lists
    - Block quotes
    - Links
-   - Inline code
 7. Click **"Send Test"** to preview (sends to all project members)
 8. Click **"Send"** to deliver to recipients
 

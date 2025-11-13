@@ -2,6 +2,8 @@
 
 ## Project Settings
 
+![Project Settings](../images/settings-project.png)
+
 ### Switching Projects
 
 If you're a member of multiple projects:

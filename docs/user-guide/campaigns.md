@@ -4,6 +4,8 @@
 
 Campaigns are one-time broadcasts to your audience.
 
+![Campaigns List](../images/campaigns-list.png)
+
 ### Creating a Campaign
 
 1. Go to **Campaigns** → **"New"**
