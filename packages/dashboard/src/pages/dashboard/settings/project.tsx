@@ -1,10 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProjectSchemas, type ProjectUpdate } from "@sendra/shared";
+import { Trash } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { BlackButton } from "../../../components/Buttons/BlackButton";
+import { DangerButton } from "../../../components/Buttons/DangerButton";
 import Card from "../../../components/Card/Card";
 import ColorList from "../../../components/Input/ColorList/ColorList";
 import Input from "../../../components/Input/Input/Input";
@@ -114,12 +116,10 @@ export default function ProjectPage() {
               <p className="text-sm font-bold text-neutral-500">Delete your project</p>
               <p className="text-sm text-neutral-400">Deleting your project may have unwanted consequences. All data associated with this project will get deleted and can not be recovered! </p>
             </div>
-            <button
-              className="ml-auto h-1/2 self-center rounded-sm bg-red-500 px-6 py-2 text-sm font-medium text-white transition ease-in-out hover:bg-red-600"
-              onClick={() => setShowDeleteModal(true)}
-            >
+            <DangerButton className="ml-auto h-1/2" onClick={() => setShowDeleteModal(true)}>
+              <Trash size={18} />
               Delete project
-            </button>
+            </DangerButton>
           </div>
         </Card>
       ) : null}

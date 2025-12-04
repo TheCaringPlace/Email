@@ -99,7 +99,8 @@ Action won't trigger if user has done ANY exclusion event.
 3. Update configuration
 4. Click **"Save Changes"**
 
-**Note:** Changes apply to future triggers only. Already-scheduled emails are not affected.
+{: .note }
+Changes apply to future triggers only. Already-scheduled emails are not affected.
 
 ### Monitoring Actions
 

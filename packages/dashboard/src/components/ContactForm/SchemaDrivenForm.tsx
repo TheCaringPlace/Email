@@ -4,6 +4,7 @@ import type { FieldTemplateProps } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
 import { useEffect, useState } from "react";
 import { useCurrentProject } from "../../lib/hooks/projects";
+import { StyledLabel } from "../Label/StyledLabel";
 
 export type SchemaDrivenFormProps = {
   formData: Record<string, unknown>;
@@ -11,18 +12,17 @@ export type SchemaDrivenFormProps = {
   errors?: Record<string, string>;
 };
 
-// Minimal Field Template - styling handled via CSS classes
-function FieldTemplate(props: FieldTemplateProps) {
+export function FieldTemplate(props: FieldTemplateProps) {
   const { id, classNames, style, label, help, required, description, errors, children } = props;
   const hasErrors = errors && typeof errors === "object" && "props" in errors;
 
   return (
     <div className={`mb-4 ${classNames}`} style={style}>
       {label && (
-        <label htmlFor={id} className="block text-sm font-medium text-neutral-700 mb-1">
+        <StyledLabel htmlFor={id} className="mb-1">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
-        </label>
+        </StyledLabel>
       )}
       {description && <p className="text-xs text-neutral-500 mb-2">{description}</p>}
       <div className="rjsf-field-input">{children}</div>

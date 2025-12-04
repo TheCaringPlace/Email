@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
-import { motion } from "framer-motion";
 import { Edit3, Plus, Workflow } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Badge from "../../../components/Badge/Badge";
+import { BlackButton } from "../../../components/Buttons/BlackButton";
 import Card from "../../../components/Card/Card";
 import Skeleton from "../../../components/Skeleton/Skeleton";
 import Empty from "../../../components/Utility/Empty/Empty";
@@ -10,23 +10,22 @@ import { useActions } from "../../../lib/hooks/actions";
 
 export default function ActionsPage() {
   const { data: actions } = useActions();
+  const navigate = useNavigate();
 
   return (
     <Card
       title="Actions"
       description="Repeatable automations that can be triggered by your applications"
       actions={
-        <Link to="/actions/new">
-          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.9 }} className={"flex items-center gap-x-1 rounded-sm bg-neutral-800 px-8 py-2 text-center text-sm font-medium text-white"}>
-            <Plus strokeWidth={1.5} size={18} />
-            New
-          </motion.button>
-        </Link>
+        <BlackButton onClick={() => navigate("/actions/new")}>
+          <Plus strokeWidth={1.5} size={18} />
+          New
+        </BlackButton>
       }
     >
       {actions ? (
         actions.length > 0 ? (
-          <div className={"grid grid-cols-1 gap-6 lg:grid-cols-2"}>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {actions
               .sort((a, b) => {
                 if (a.name < b.name) {
@@ -50,11 +49,11 @@ export default function ActionsPage() {
                         <div className="flex items-center space-x-3">
                           <h3 className="truncate text-lg font-bold text-neutral-800">{a.name}</h3>
                         </div>
-                        <div className={"mb-6"}>
-                          <h2 className={"text col-span-2 truncate font-semibold text-neutral-700"}>Quick stats</h2>
-                          <div className={"grid grid-cols-2 gap-3"}>
+                        <div className="mb-6">
+                          <h2 className="text col-span-2 truncate font-semibold text-neutral-700">Quick stats</h2>
+                          <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className={"text-xs font-medium text-neutral-500"} htmlFor="total-triggers">
+                              <label className="text-xs font-medium text-neutral-500" htmlFor="total-triggers">
                                 Total events
                               </label>
                               <p className="mt-1 truncate text-sm text-neutral-500" id="total-triggers">
@@ -63,7 +62,7 @@ export default function ActionsPage() {
                             </div>
 
                             <div>
-                              <label className={"text-xs font-medium text-neutral-500"} htmlFor="last-activity">
+                              <label className="text-xs font-medium text-neutral-500" htmlFor="last-activity">
                                 Last activity
                               </label>
                               <p className="mt-1 truncate text-sm text-neutral-500" id="last-activity">
@@ -99,8 +98,8 @@ export default function ActionsPage() {
                             )}
                           </div>
                         </div>
-                        <div className={"my-4"}>
-                          <h2 className={"col-span-2 truncate font-semibold text-neutral-700"}>Properties</h2>
+                        <div className="my-4">
+                          <h2 className="col-span-2 truncate font-semibold text-neutral-700">Properties</h2>
                           <div className={"grid grid-cols-2 gap-3"}>
                             <div>
                               <label className={"text-xs font-medium text-neutral-500"} htmlFor="repeats">
@@ -143,7 +142,7 @@ export default function ActionsPage() {
               })}
           </div>
         ) : (
-          <Empty title={"No actions here"} description={"Set up a new automation in a few clicks"} />
+          <Empty title="No actions here" description="Set up a new automation in a few clicks" />
         )
       ) : (
         <Skeleton type={"table"} />

@@ -13,6 +13,7 @@ import { MenuButton } from "../../../components/Buttons/MenuButton";
 import Card from "../../../components/Card/Card";
 import GroupOrContacts from "../../../components/ContactSelector/GroupOrContacts";
 import Dropdown from "../../../components/Input/Dropdown/Dropdown";
+import { StyledLabel } from "../../../components/Label/StyledLabel";
 import Modal from "../../../components/Overlay/Modal/Modal";
 import Table from "../../../components/Table/Table";
 import FullscreenLoader from "../../../components/Utility/FullscreenLoader/FullscreenLoader";
@@ -211,40 +212,41 @@ export default function ViewCampaignPage() {
         isOpen={confirmModal}
         onToggle={() => setConfirmModal(!confirmModal)}
         onAction={handleSubmit(send)}
-        type={"info"}
+        type="info"
         title={"Send campaign"}
         description={`Once you start sending this campaign to ${watch("recipients").length} contacts, you can no longer make changes or undo it.`}
       >
-        <label htmlFor="campaign-delay" className="block text-sm font-medium text-neutral-700">
+        <StyledLabel>
           Delay
-        </label>
-        <Dropdown
-          inModal={true}
-          onChange={(val) => setDelay(Number.parseInt(val, 10))}
-          values={[
-            {
-              name: "Send immediately",
-              value: "0",
-            },
-            {
-              name: "In an hour",
-              value: "60",
-            },
-            {
-              name: "In 6 hours",
-              value: "360",
-            },
-            {
-              name: "In 12 hours",
-              value: "720",
-            },
-            {
-              name: "In 24 hours",
-              value: "1440",
-            },
-          ]}
-          selectedValue={delay.toString()}
-        />
+          <Dropdown
+            className="mt-1"
+            inModal={true}
+            onChange={(val) => setDelay(Number.parseInt(val, 10))}
+            values={[
+              {
+                name: "Send immediately",
+                value: "0",
+              },
+              {
+                name: "In an hour",
+                value: "60",
+              },
+              {
+                name: "In 6 hours",
+                value: "360",
+              },
+              {
+                name: "In 12 hours",
+                value: "720",
+              },
+              {
+                name: "In 24 hours",
+                value: "1440",
+              },
+            ]}
+            selectedValue={delay.toString()}
+          />
+        </StyledLabel>
       </Modal>
 
       <Card

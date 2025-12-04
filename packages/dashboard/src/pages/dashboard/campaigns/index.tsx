@@ -106,7 +106,7 @@ export default function Index() {
 
   return (
     <>
-      <Modal isOpen={newCampaignModal} onToggle={() => setNewCampaignModal((s) => !s)} onAction={() => {}} type={"info"} title={"Create new campaign"} hideActionButtons={true}>
+      <Modal isOpen={newCampaignModal} onToggle={() => setNewCampaignModal((s) => !s)} onAction={() => {}} type="info" title={"Create new campaign"} hideActionButtons={true}>
         <form onSubmit={handleCreateSubmit(createCampaign)} className="flex flex-col gap-6">
           <div>
             <Input className={"sm:col-span-6"} label={"Subject"} placeholder={`Welcome to ${project.name}!`} register={register("subject")} error={errors.subject} />
@@ -191,11 +191,11 @@ export default function Index() {
                             )}
                           </div>
                         </div>
-                        <div className={"my-4"}>
-                          <h2 className={"col-span-2 truncate font-semibold text-neutral-700"}>Properties</h2>
-                          <div className={"grid grid-cols-2 gap-3"}>
+                        <div className="my-4">
+                          <h2 className="col-span-2 truncate font-semibold text-neutral-700">Properties</h2>
+                          <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label htmlFor="recipients" className={"text-xs font-medium text-neutral-500"}>
+                              <label htmlFor="recipients" className="text-xs font-medium text-neutral-500">
                                 Recipients
                               </label>
                               <p id="recipients" className="mt-1 truncate text-sm text-neutral-500">
@@ -204,11 +204,11 @@ export default function Index() {
                             </div>
 
                             <div>
-                              <label htmlFor="status" className={"text-xs font-medium text-neutral-500"}>
+                              <label htmlFor="status" className="text-xs font-medium text-neutral-500">
                                 Status
                               </label>
                               <p id="status" className="mt-1 truncate text-sm text-neutral-500">
-                                {c.status === "DRAFT" ? <Badge type={"info"}>Draft</Badge> : <Badge type={"success"}>Sent</Badge>}
+                                {c.status === "DRAFT" ? <Badge type="info">Draft</Badge> : <Badge type="success">Sent</Badge>}
                               </p>
                             </div>
                           </div>
@@ -233,7 +233,7 @@ export default function Index() {
               })}
             </div>
           ) : (
-            <Empty title={"No campaigns found"} description={"Send your contacts emails in bulk with a few clicks"} />
+            <Empty title="No campaigns found" description="Send your contacts emails in bulk with a few clicks" />
           )
         ) : (
           <Skeleton type={"table"} />

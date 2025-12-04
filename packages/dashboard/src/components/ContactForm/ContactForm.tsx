@@ -1,8 +1,8 @@
 import type { ContactCreate } from "@sendra/shared";
-import { motion } from "framer-motion";
 import { Save } from "lucide-react";
 import { useState } from "react";
 import { useCurrentProject } from "../../lib/hooks/projects";
+import { BlackButton } from "../Buttons/BlackButton";
 import { ContactMetadataForm } from "../ContactMetadataForm/ContactMetadataForm";
 import Input from "../Input/Input/Input";
 import Toggle from "../Input/Toggle/Toggle";
@@ -65,15 +65,10 @@ export function ContactForm({ projectId, contactId, onSuccess, initialData, show
       </div>
 
       <div className={"col-span-2 ml-auto flex justify-end gap-x-5"}>
-        <motion.button
-          type="submit"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.9 }}
-          className={"ml-auto mt-6 flex items-center gap-x-2 rounded-sm bg-neutral-800 px-6 py-2 text-center text-sm font-medium text-white"}
-        >
+        <BlackButton type="submit">
           <Save strokeWidth={1.5} size={18} />
           {submitButtonText}
-        </motion.button>
+        </BlackButton>
       </div>
     </form>
   );

@@ -2,6 +2,7 @@ import type { Contact } from "@sendra/shared";
 import { Trash } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import Dropdown from "../Dropdown/Dropdown";
+import { StyledInput } from "../Input/StyledInput";
 import { type Condition, conditions, type MetadataFilterType } from "./types";
 
 /**
@@ -105,10 +106,9 @@ export default function Filter({
             )}
             {filter.condition && !isValueDropdown && (
               <div className="mt-1">
-                <input
-                  autoComplete={"off"}
+                <StyledInput
+                  autoComplete="off"
                   type="text"
-                  className={"block w-full rounded-sm border-neutral-300 transition ease-in-out focus:border-neutral-800 focus:ring-neutral-800 sm:text-sm"}
                   aria-label="Value"
                   placeholder="Value"
                   value={filter.value ?? "any value"}

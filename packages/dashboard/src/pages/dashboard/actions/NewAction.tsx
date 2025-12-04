@@ -7,11 +7,15 @@ import { useEffect, useMemo, useState } from "react";
 import { type FieldError, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { BlackButton } from "../../../components/Buttons/BlackButton";
+import { SecondaryButton } from "../../../components/Buttons/SecondaryButton";
 import Card from "../../../components/Card/Card";
 import Dropdown from "../../../components/Input/Dropdown/Dropdown";
 import Input from "../../../components/Input/Input/Input";
+import { StyledInput } from "../../../components/Input/Input/StyledInput";
 import MultiselectDropdown from "../../../components/Input/MultiselectDropdown/MultiselectDropdown";
 import Toggle from "../../../components/Input/Toggle/Toggle";
+import { StyledLabel } from "../../../components/Label/StyledLabel";
 import FullscreenLoader from "../../../components/Utility/FullscreenLoader/FullscreenLoader";
 import { useActions } from "../../../lib/hooks/actions";
 import { useEventTypes } from "../../../lib/hooks/events";
@@ -89,22 +93,23 @@ export default function NewAction() {
         <Input label={"Name"} placeholder={"Onboarding Flow"} register={register("name")} error={errors.name} />
 
         <div>
-          <label htmlFor={"events"} className="block text-sm font-medium text-neutral-700">
+          <StyledLabel>
             Run on triggers
-          </label>
-          <MultiselectDropdown
-            onChange={(e) => setValue("events", e)}
-            values={eventTypes
-              .filter((e) => !watch("notevents")?.includes(e.name))
-              .sort((a, b) => a.name.localeCompare(b.name))
-              .map((e) => {
-                return {
-                  name: e.name,
-                  value: e.name,
-                };
-              })}
-            selectedValues={watch("events")}
-          />
+            <MultiselectDropdown
+              className="mt-1"
+              onChange={(e) => setValue("events", e)}
+              values={eventTypes
+                .filter((e) => !watch("notevents")?.includes(e.name))
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((e) => {
+                  return {
+                    name: e.name,
+                    value: e.name,
+                  };
+                })}
+              selectedValues={watch("events")}
+            />
+          </StyledLabel>
           <AnimatePresence>
             {(errors.events as FieldError | undefined)?.message && (
               <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">
@@ -115,22 +120,23 @@ export default function NewAction() {
         </div>
 
         <div>
-          <label htmlFor={"events"} className="block text-sm font-medium text-neutral-700">
+          <StyledLabel>
             Exclude contacts with triggers
-          </label>
-          <MultiselectDropdown
-            onChange={(e) => setValue("notevents", e)}
-            values={eventTypes
-              .filter((e) => !watch("events").includes(e.name))
-              .sort((a, b) => a.name.localeCompare(b.name))
-              .map((e) => {
-                return {
-                  name: e.name,
-                  value: e.name,
-                };
-              })}
-            selectedValues={watch("notevents")}
-          />
+            <MultiselectDropdown
+              className="mt-1"
+              onChange={(e) => setValue("notevents", e)}
+              values={eventTypes
+                .filter((e) => !watch("events").includes(e.name))
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((e) => {
+                  return {
+                    name: e.name,
+                    value: e.name,
+                  };
+                })}
+              selectedValues={watch("notevents")}
+            />
+          </StyledLabel>
           <AnimatePresence>
             {(errors.notevents as FieldError | undefined)?.message && (
               <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">
@@ -141,16 +147,17 @@ export default function NewAction() {
         </div>
 
         <div>
-          <label htmlFor={"template"} className="block text-sm font-medium text-neutral-700">
+          <StyledLabel>
             Template
-          </label>
-          <Dropdown
-            onChange={(t) => setValue("template", t)}
-            values={templates.map((t) => {
-              return { name: t.subject, value: t.id };
-            })}
-            selectedValue={watch("template")}
-          />
+            <Dropdown
+              className="mt-1"
+              onChange={(t) => setValue("template", t)}
+              values={templates.map((t) => {
+                return { name: t.subject, value: t.id };
+              })}
+              selectedValue={watch("template")}
+            />
+          </StyledLabel>
           <AnimatePresence>
             {errors.template?.message && (
               <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">
@@ -166,12 +173,11 @@ export default function NewAction() {
           </label>
           <div className={"grid grid-cols-6 gap-4"}>
             <div className={"col-span-2 mt-1"}>
-              <input
-                type={"number"}
-                autoComplete={"off"}
+              <StyledInput
+                type="number"
+                autoComplete="off"
                 min={0}
-                className={"block w-full rounded-sm border-neutral-300 transition ease-in-out focus:border-neutral-800 focus:ring-neutral-800 sm:text-sm"}
-                placeholder={"0"}
+                placeholder="0"
                 value={delay.delay}
                 onChange={(e) =>
                   setDelay({
@@ -210,28 +216,19 @@ export default function NewAction() {
         </div>
 
         <div className={"flex justify-end gap-3"}>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.9 }}
+          <SecondaryButton
             onClick={(e) => {
               e.preventDefault();
               navigate("/actions");
             }}
-            className={
-              "flex w-fit justify-center rounded-sm border border-neutral-300 bg-white px-6 py-2 text-base font-medium text-neutral-700 focus:outline-hidden focus:ring-2 focus:ring-neutral-800 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"
-            }
           >
             Cancel
-          </motion.button>
+          </SecondaryButton>
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.9 }}
-            className={"flex items-center gap-x-0.5 rounded-sm bg-neutral-800 px-8 py-2 text-center text-sm font-medium text-white"}
-          >
+          <BlackButton type="submit">
             <Plus size={18} />
             Create
-          </motion.button>
+          </BlackButton>
         </div>
       </form>
     </Card>

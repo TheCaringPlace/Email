@@ -1,6 +1,8 @@
 import type { ContactCreate } from "@sendra/shared";
 import { Plus, Trash } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { StyledInput } from "../Input/Input/StyledInput";
+import { LightLabel } from "../Label/LightLabel";
 
 export type ContactMetadataFormProps = {
   initialData?: ContactCreate["data"];
@@ -58,29 +60,17 @@ export function ContactMetadataForm({ initialData = {}, onDataChange, className 
               <div key={field.id}>
                 <div className="grid w-full grid-cols-9 items-end gap-3">
                   <div className="col-span-4">
-                    <label className="text-xs font-light">
+                    <LightLabel>
                       Key
-                      <input
-                        type={"text"}
-                        placeholder={"Key"}
-                        className={"block w-full rounded-sm border-neutral-300 transition ease-in-out focus:border-neutral-800 focus:ring-neutral-800 sm:text-sm"}
-                        key={field.id}
-                        {...register(`data.${index}.value.key`)}
-                      />
-                    </label>
+                      <StyledInput type="text" placeholder="Key" key={field.id} {...register(`data.${index}.value.key`)} />
+                    </LightLabel>
                   </div>
 
                   <div className="col-span-4">
-                    <label className="text-xs font-light">
+                    <LightLabel>
                       Value
-                      <input
-                        type={"text"}
-                        placeholder={"Value"}
-                        className={"block w-full rounded-sm border-neutral-300 transition ease-in-out focus:border-neutral-800 focus:ring-neutral-800 sm:text-sm"}
-                        key={field.id}
-                        {...register(`data.${index}.value.value`)}
-                      />
-                    </label>
+                      <StyledInput type="text" placeholder="Value" key={field.id} {...register(`data.${index}.value.value`)} />
+                    </LightLabel>
                   </div>
                   <button
                     className="col-span-1 flex h-10 items-center justify-center rounded-sm bg-red-100 text-sm text-red-800 transition hover:bg-red-200"

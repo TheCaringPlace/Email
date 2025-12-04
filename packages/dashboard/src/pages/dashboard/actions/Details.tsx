@@ -1,19 +1,24 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ActionSchemas, type ActionUpdate } from "@sendra/shared";
 import dayjs from "dayjs";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Edit3, Save, Trash, Workflow } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { type FieldError, useForm } from "react-hook-form";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import Badge from "../../../components/Badge/Badge";
+import { BlackButton } from "../../../components/Buttons/BlackButton";
 import { MenuButton } from "../../../components/Buttons/MenuButton";
+import { SecondaryButton } from "../../../components/Buttons/SecondaryButton";
 import Card from "../../../components/Card/Card";
 import Dropdown from "../../../components/Input/Dropdown/Dropdown";
 import Input from "../../../components/Input/Input/Input";
+import { StyledInput } from "../../../components/Input/Input/StyledInput";
 import MultiselectDropdown from "../../../components/Input/MultiselectDropdown/MultiselectDropdown";
 import Toggle from "../../../components/Input/Toggle/Toggle";
+import { ErrorMessage } from "../../../components/Label/ErrorMessage";
+import { StyledLabel } from "../../../components/Label/StyledLabel";
 import Empty from "../../../components/Utility/Empty/Empty";
 import FullscreenLoader from "../../../components/Utility/FullscreenLoader/FullscreenLoader";
 import { useAction, useActions, useRelatedActions } from "../../../lib/hooks/actions";
@@ -148,135 +153,113 @@ export default function ActionDetailPage() {
           <Input label={"Name"} placeholder={"Onboarding Flow"} register={register("name")} error={errors.name} />
 
           <div>
-            <label htmlFor={"events"} className="block text-sm font-medium text-neutral-800">
+            <StyledLabel>
               Run on triggers
-            </label>
-            <MultiselectDropdown
-              onChange={(e) => setValue("events", e)}
-              values={eventTypes
-                .filter((e) => !watch("notevents")?.includes(e.name))
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .map((e) => {
-                  return {
-                    name: e.name,
-                    value: e.name,
-                  };
-                })}
-              selectedValues={watch("events")}
-            />
-            <AnimatePresence>
-              {(errors.events as FieldError | undefined)?.message && (
-                <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">
-                  {(errors.events as FieldError | undefined)?.message}
-                </motion.p>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <div>
-            <label htmlFor={"events"} className="block text-sm font-medium text-neutral-800">
-              Exclude contacts with events
-            </label>
-            <MultiselectDropdown
-              onChange={(e) => setValue("notevents", e)}
-              values={eventTypes
-                .filter((e) => !watch("events").includes(e.name))
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .map((e) => {
-                  return {
-                    name: e.name,
-                    value: e.name,
-                  };
-                })}
-              selectedValues={watch("notevents")}
-            />
-            <AnimatePresence>
-              {(errors.notevents as FieldError | undefined)?.message && (
-                <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">
-                  {(errors.notevents as FieldError | undefined)?.message}
-                </motion.p>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <div>
-            <label htmlFor={"template"} className="block text-sm font-medium text-neutral-800">
-              Template
-            </label>
-            <div className={"grid gap-6 sm:grid-cols-6"}>
-              <div className={"sm:col-span-4"}>
-                <Dropdown
-                  onChange={(t) => setValue("template", t)}
-                  values={templates.map((t) => {
-                    return { name: t.subject, value: t.id };
+              <MultiselectDropdown
+                className="mt-1"
+                onChange={(e) => setValue("events", e)}
+                values={eventTypes
+                  .filter((e) => !watch("notevents")?.includes(e.name))
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map((e) => {
+                    return {
+                      name: e.name,
+                      value: e.name,
+                    };
                   })}
-                  selectedValue={watch("template")}
-                />
-                <AnimatePresence>
-                  {errors.template?.message && (
-                    <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">
-                      {errors.template.message}
-                    </motion.p>
-                  )}
-                </AnimatePresence>
-              </div>
-              <Link to={`/templates/${action.template}`} className={"sm:col-span-2"}>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.9 }}
-                  className={"flex h-full w-full items-center justify-center gap-x-1 rounded-sm border border-neutral-300 bg-white text-center text-sm font-medium text-neutral-800"}
-                >
-                  <Edit3 />
-                  Edit
-                </motion.button>
-              </Link>
-            </div>
+                selectedValues={watch("events")}
+              />
+            </StyledLabel>
+            <ErrorMessage error={errors.events as FieldError | undefined} />
           </div>
 
           <div>
-            <label htmlFor={"template"} className="block text-sm font-medium text-neutral-800">
+            <StyledLabel>
+              Exclude contacts with events
+              <MultiselectDropdown
+                onChange={(e) => setValue("notevents", e)}
+                values={eventTypes
+                  .filter((e) => !watch("events").includes(e.name))
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map((e) => {
+                    return {
+                      name: e.name,
+                      value: e.name,
+                    };
+                  })}
+                selectedValues={watch("notevents")}
+              />
+            </StyledLabel>
+            <ErrorMessage error={errors.notevents as FieldError | undefined} />
+          </div>
+
+          <div>
+            <StyledLabel>
+              Template
+              <div className={"grid gap-6 sm:grid-cols-6"}>
+                <div className={"sm:col-span-4"}>
+                  <Dropdown
+                    onChange={(t) => setValue("template", t)}
+                    values={templates.map((t) => {
+                      return { name: t.subject, value: t.id };
+                    })}
+                    selectedValue={watch("template")}
+                  />
+                  <ErrorMessage error={errors.template} />
+                </div>
+                <Link to={`/templates/${action.template}`} className={"sm:col-span-2"}>
+                  <SecondaryButton className="w-full flex">
+                    <Edit3 />
+                    Edit
+                  </SecondaryButton>
+                </Link>
+              </div>
+            </StyledLabel>
+          </div>
+
+          <div>
+            <StyledLabel>
               Delay before sending
-            </label>
-            <div className={"grid grid-cols-6 gap-4"}>
-              <div className={"col-span-2 mt-1"}>
-                <input
-                  type={"number"}
-                  autoComplete={"off"}
-                  min={0}
-                  className={"block w-full rounded-sm border-neutral-300 transition ease-in-out focus:border-neutral-800 focus:ring-neutral-800 sm:text-sm"}
-                  placeholder={"0"}
-                  value={delay.delay}
-                  onChange={(e) =>
-                    setDelay({
-                      ...delay,
-                      delay: Number.parseInt(e.target.value, 10),
-                    })
-                  }
-                />
+              <div className="grid grid-cols-6 gap-4 mt-1">
+                <div className="col-span-2">
+                  <StyledInput
+                    type="number"
+                    autoComplete="off"
+                    min={0}
+                    placeholder="0"
+                    value={delay.delay}
+                    onChange={(e) =>
+                      setDelay({
+                        ...delay,
+                        delay: Number.parseInt(e.target.value, 10),
+                      })
+                    }
+                  />
+                </div>
+                <div className="col-span-4">
+                  <Dropdown
+                    onChange={(t) =>
+                      setDelay({
+                        ...delay,
+                        unit: t as "MINUTES" | "HOURS" | "DAYS",
+                      })
+                    }
+                    values={[
+                      { name: "Minutes", value: "MINUTES" },
+                      { name: "Hours", value: "HOURS" },
+                      { name: "Days", value: "DAYS" },
+                    ]}
+                    selectedValue={delay.unit}
+                  />
+                </div>
               </div>
-              <div className={"col-span-4"}>
-                <Dropdown
-                  onChange={(t) =>
-                    setDelay({
-                      ...delay,
-                      unit: t as "MINUTES" | "HOURS" | "DAYS",
-                    })
-                  }
-                  values={[
-                    { name: "Minutes", value: "MINUTES" },
-                    { name: "Hours", value: "HOURS" },
-                    { name: "Days", value: "DAYS" },
-                  ]}
-                  selectedValue={delay.unit}
-                />
-              </div>
-            </div>
+            </StyledLabel>
           </div>
 
           <div>
             <Toggle
-              title={"Run once"}
-              description={"Toggle this on if you want to run this action only once per contact."}
+              title="Run once"
+              description="Toggle this on if you want to run this action only once per contact."
               toggled={watch("runOnce") ?? false}
               onToggle={() => setValue("runOnce", !watch("runOnce"))}
             />
@@ -297,20 +280,15 @@ export default function ActionDetailPage() {
               Cancel
             </motion.button>
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.9 }}
-              className={"flex items-center gap-x-2 rounded-sm bg-neutral-800 px-8 py-2 text-center text-sm font-medium text-white"}
-              type="submit"
-            >
+            <BlackButton type="submit">
               <Save strokeWidth={1.5} size={18} />
               Save
-            </motion.button>
+            </BlackButton>
           </div>
         </form>
       </Card>
-      <Card title={"Related Actions"}>
-        <div className={"grid gap-3 sm:grid-cols-2"}>
+      <Card title="Related Actions">
+        <div className="grid gap-3 sm:grid-cols-2">
           {related.length > 0 ? (
             related
               .sort((a, b) => {
@@ -325,15 +303,15 @@ export default function ActionDetailPage() {
               .map((r) => {
                 return (
                   <Link to={`/actions/${r.id}`} key={r.id}>
-                    <div className={"flex items-center gap-6 rounded-sm border border-solid border-neutral-200 bg-white px-8 py-4"}>
+                    <div className="flex items-center gap-6 rounded-sm border border-solid border-neutral-200 bg-white px-8 py-4">
                       <div>
                         <span className="inline-flex rounded-sm bg-neutral-100 p-4 text-neutral-800 ring-4 ring-white">
                           <Workflow size={18} />
                         </span>
                       </div>
-                      <div className={"text-sm"}>
-                        <p className={"text-base font-semibold leading-tight text-neutral-800"}>{r.name}</p>
-                        <p className={"text-neutral-500"}>
+                      <div className="text-sm">
+                        <p className="text-base font-semibold leading-tight text-neutral-800">{r.name}</p>
+                        <p className="text-neutral-500">
                           Runs after {r.events.filter((e) => action.events.filter((a) => a === e).length > 0).map((e) => eventTypes.find((event) => event.name === e)?.name)} and{" "}
                           {
                             r.events.filter((e) => {
@@ -342,13 +320,13 @@ export default function ActionDetailPage() {
                           }{" "}
                           other events
                         </p>
-                        <div className={"mt-1"}>
+                        <div className="mt-1">
                           {r.delay === action.delay ? (
-                            <Badge type={"info"}>Same delay</Badge>
+                            <Badge type="info">Same delay</Badge>
                           ) : r.delay > action.delay ? (
-                            <Badge type={"info"}>{`${dayjs.duration(r.delay - action.delay, "minutes").humanize()} after this action`}</Badge>
+                            <Badge type="info">{`${dayjs.duration(r.delay - action.delay, "minutes").humanize()} after this action`}</Badge>
                           ) : (
-                            <Badge type={"info"}>{`${dayjs.duration(action.delay - r.delay, "minutes").humanize()} before this action`}</Badge>
+                            <Badge type="info">{`${dayjs.duration(action.delay - r.delay, "minutes").humanize()} before this action`}</Badge>
                           )}
                         </div>
                       </div>
@@ -357,8 +335,8 @@ export default function ActionDetailPage() {
                 );
               })
           ) : (
-            <div className={"sm:col-span-3"}>
-              <Empty title={"No related actions"} description={"Easy access to all actions that share events"} />
+            <div className="sm:col-span-3">
+              <Empty title="No related actions" description="Easy access to all actions that share events" />
             </div>
           )}
         </div>

@@ -121,9 +121,9 @@ export default function MultiselectDropdown({ onChange, values, selectedValues: 
                 <input
                   type="search"
                   name="search"
-                  autoComplete={"off"}
+                  autoComplete="off"
                   className="block w-full rounded-sm border-neutral-300 focus:border-black focus:ring-black sm:text-sm"
-                  placeholder={"Search"}
+                  placeholder="Search"
                   onChange={(e) => setQuery(e.target.value)}
                 />
               </li>

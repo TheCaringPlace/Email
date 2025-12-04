@@ -34,7 +34,7 @@ export default function MetadataFilterEditor({ onChange, contacts }: { onChange:
 
       {group.filters.map((filter, index) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: Filters don't have unique IDs and order is stable
-        <div className={"sm:col-span-4"} key={`filter-${index}`}>
+        <div className="sm:col-span-4" key={`filter-${index}`}>
           <Filter
             initialFilter={filter}
             onFilterChange={(filter) => setGroup({ ...group, filters: group.filters.map((f, i) => (i === index ? filter : f)) })}
@@ -44,15 +44,13 @@ export default function MetadataFilterEditor({ onChange, contacts }: { onChange:
           />
         </div>
       ))}
-      <div className={"sm:col-span-1"}>
+      <div className="sm:col-span-1">
         <button
           onClick={(e) => {
             e.preventDefault();
             setGroup({ ...group, filters: [...group.filters, { field: "", value: "", condition: "is" }] });
           }}
-          className={
-            "mt-6 flex items-center justify-center gap-x-1 rounded-sm border border-neutral-300 bg-white px-8 py-1 text-center text-sm font-medium text-neutral-800 transition ease-in-out hover:bg-neutral-100"
-          }
+          className="mt-6 flex items-center justify-center gap-x-1 rounded-sm border border-neutral-300 bg-white px-8 py-1 text-center text-sm font-medium text-neutral-800 transition ease-in-out hover:bg-neutral-100"
         >
           <Plus size={18} />
           Add filter

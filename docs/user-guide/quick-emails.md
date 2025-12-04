@@ -17,14 +17,14 @@ Quick emails allow you to send campaigns using a simple rich text editor instead
 ### Creating a Quick Email Template
 
 1. Go to **Templates** → **"New"**
-2. Add the token `{{quickBody}}` or `{{{quickBody}}}` where you want the campaign content to appear
+2. Add the token {% raw %}`{{quickBody}}` or `{{{quickBody}}}`{% endraw %} where you want the campaign content to appear
 3. Check the **"Quick Email Template"** checkbox
 4. Click **"Create Template"**
 
 #### Token Options
 
-- `{{quickBody}}` - Escapes HTML in the campaign body (safer for plain text)
-- `{{{quickBody}}}` - Does NOT escape HTML (use if you want to include HTML formatting in your campaign)
+- {% raw %}`{{quickBody}}`{% endraw %} - Escapes HTML in the campaign body (safer for plain text)
+- {% raw %}`{{{quickBody}}}`{% endraw %} - Does NOT escape HTML (use if you want to include HTML formatting in your campaign)
 
 
 ### Creating a Quick Email Campaign
@@ -57,10 +57,10 @@ Quick emails allow you to send campaigns using a simple rich text editor instead
 Quick email templates support all standard template variables:
 
 ```
-{{contact.email}}           - Contact's email address
+{% raw %}{{contact.email}}           - Contact's email address
 {{contact.data.firstName}}  - Custom contact data
 {{project.name}}            - Project name
-{{project.id}}              - Project ID
+{{project.id}}              - Project ID{% endraw %}
 ```
 
 These can be used anywhere in the template, including the body content you write in the campaign editor.

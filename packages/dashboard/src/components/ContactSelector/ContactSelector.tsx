@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { LoaderCircle, Search, Users2, XIcon } from "lucide-react";
 import { useState } from "react";
 import MultiselectDropdown from "../Input/MultiselectDropdown/MultiselectDropdown";
+import { StyledLabel } from "../Label/StyledLabel";
 import ContactFilterForm from "./ContactFilterForm";
 
 export default function ContactSelector({
@@ -26,9 +27,7 @@ export default function ContactSelector({
       {contacts && (
         <>
           <div className="sm:col-span-3">
-            <label htmlFor="recipients" className="block text-sm font-medium text-neutral-700">
-              {label}
-            </label>
+            <StyledLabel htmlFor="recipients">{label}</StyledLabel>
             <MultiselectDropdown
               disabled={disabled}
               onChange={(c) => {

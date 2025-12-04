@@ -80,7 +80,10 @@ Define a JSON schema to structure and validate contact data. When a schema is de
 - Data validation when creating or updating contacts
 - Consistent data structure across your project
 
-**Note:** Projects without a schema will continue to use the free-form metadata editor. See [JSON Schema documentation](https://json-schema.org/learn/getting-started-step-by-step) for more information on schema syntax.
+{: .note }
+Projects without a schema will continue to use the free-form metadata editor. 
+
+See [JSON Schema documentation](https://json-schema.org/learn/getting-started-step-by-step) for more information on schema syntax and [React JSON Schema Form](https://rjsf-team.github.io/react-jsonschema-form/docs/) for how the form will be created from the JSON Schema.
 
 ### API Access
 
@@ -126,8 +129,5 @@ Access via **Project Settings** → **Members**
 
 Access via **Project Settings** → **Danger Zone**
 
-**Warning:** This action:
-- Permanently deletes all project data
-- Cannot be undone
-- Removes all contacts, campaigns, templates, and events
-- Requires admin role
+{: .warning }
+Deleting a Project permanently deletes all project data and cannot be undone. This includes removing all contacts, campaigns, templates, and events associated with the project.

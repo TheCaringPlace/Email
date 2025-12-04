@@ -1,7 +1,9 @@
 import { RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { DangerButton } from "../../../components/Buttons/DangerButton";
 import Card from "../../../components/Card/Card";
+import { StyledLabel } from "../../../components/Label/StyledLabel";
 import SettingTabs from "../../../components/Navigation/SettingTabs/SettingTabs";
 import Modal from "../../../components/Overlay/Modal/Modal";
 import { API_URI } from "../../../lib/constants";
@@ -10,22 +12,24 @@ import { network } from "../../../lib/network";
 
 const ClipboardButton = ({ text, label, description }: { text: string; label: string; description: string }) => {
   return (
-    <label className="block text-sm font-medium text-neutral-700">
-      <button
-        onClick={() => {
-          void navigator.clipboard.writeText(text);
-          toast.success(`Copied your ${label}`);
-        }}
-        className="w-full"
-      >
-        {label}
-        <p className="cursor-pointer rounded-sm border border-neutral-300 bg-neutral-100 px-3 py-2 text-sm truncate" id="api-endpoint">
-          {text}
-        </p>
+    <div className="mt-4">
+      <StyledLabel>
+        <button
+          onClick={() => {
+            void navigator.clipboard.writeText(text);
+            toast.success(`Copied your ${label}`);
+          }}
+          className="w-full"
+        >
+          {label}
+          <p className="cursor-pointer rounded-sm border border-neutral-300 bg-neutral-100 px-3 py-2 text-sm truncate" id="api-endpoint">
+            {text}
+          </p>
 
-        <p className="text-sm text-neutral-500">{description}</p>
-      </button>
-    </label>
+          <p className="text-sm text-neutral-500">{description}</p>
+        </button>
+      </StyledLabel>
+    </div>
   );
 };
 
@@ -83,38 +87,24 @@ export default function ApiSettingsPage() {
         title="API Access"
         description={`Manage your API access for ${project.name}.`}
         actions={
-          <button
-            onClick={() => setShowRegenerateModal(!showRegenerateModal)}
-            className={"flex items-center gap-x-1 rounded-sm bg-red-600 px-8 py-2 text-center text-sm font-medium text-white transition ease-in-out hover:bg-red-700"}
-          >
+          <DangerButton onClick={() => setShowRegenerateModal(!showRegenerateModal)}>
             <RefreshCw strokeWidth={1.5} size={18} />
             Regenerate
-          </button>
+          </DangerButton>
         }
       >
-        <div className="mt-4">
-          <ClipboardButton text={API_URI ?? ""} label="API Endpoint" description="The endpoint to your Sendra API." />
-        </div>
-
-        <div className="mt-4">
-          <ClipboardButton text={project.id} label="Project ID" description="The ID of your project, used to identify your project in the API." />
-        </div>
-
-        <div className="mt-4">
-          <ClipboardButton
-            text={activeProjectKeys?.public ?? ""}
-            label="Public API Key"
-            description={`Use this key for any front-end services. This key can only be used to publish events. This key expires at ${expiresAt(activeProjectKeys?.public)}.`}
-          />
-        </div>
-
-        <div className="mt-4">
-          <ClipboardButton
-            text={activeProjectKeys?.secret ?? ""}
-            label="Secret API Key"
-            description={`Use this key for any secure back-end services. This key gives complete access to your Sendra setup. This key expires at ${expiresAt(activeProjectKeys?.secret)}.`}
-          />
-        </div>
+        <ClipboardButton text={API_URI ?? ""} label="API Endpoint" description="The endpoint to your Sendra API." />
+        <ClipboardButton text={project.id} label="Project ID" description="The ID of your project, used to identify your project in the API." />
+        <ClipboardButton
+          text={activeProjectKeys?.public ?? ""}
+          label="Public API Key"
+          description={`Use this key for any front-end services. This key can only be used to publish events. This key expires at ${expiresAt(activeProjectKeys?.public)}.`}
+        />
+        <ClipboardButton
+          text={activeProjectKeys?.secret ?? ""}
+          label="Secret API Key"
+          description={`Use this key for any secure back-end services. This key gives complete access to your Sendra setup. This key expires at ${expiresAt(activeProjectKeys?.secret)}.`}
+        />
       </Card>
     </>
   );

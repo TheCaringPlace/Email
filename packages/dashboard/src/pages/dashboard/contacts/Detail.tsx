@@ -175,7 +175,7 @@ export default function ContactDetailPage() {
                             <div className="space-y-4">
                               <div className="flex items-center gap-2">
                                 <span className="font-semibold text-neutral-700 w-20">Status</span>
-                                <Badge type={"info"}>
+                                <Badge type="info">
                                   <span className={"capitalize"}>{email.status.toLowerCase()}</span>
                                 </Badge>
                               </div>

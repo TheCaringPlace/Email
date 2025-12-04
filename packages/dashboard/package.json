@@ -20,6 +20,7 @@
 		"clean": "rimraf dist node_modules .turbo .vite"
 	},
 	"dependencies": {
+		"@codemirror/lang-json": "^6.0.2",
 		"@hookform/resolvers": "^5.2.2",
 		"@measured/puck": "^0.20.2",
 		"@react-email/components": "^0.5.7",
@@ -38,6 +39,7 @@
 		"@tiptap/extension-underline": "^3.10.7",
 		"@tiptap/react": "^3.10.7",
 		"@tiptap/starter-kit": "^3.10.7",
+		"@uiw/react-codemirror": "^4.25.3",
 		"dayjs": "^1.11.12",
 		"dompurify": "^3.2.6",
 		"framer-motion": "^12.23.24",
@@ -47,6 +49,7 @@
 		"quill": "^2.0.3",
 		"react": "19.2.0",
 		"react-dom": "19.2.0",
+		"react-error-boundary": "^6.0.0",
 		"react-hook-form": "^7.66.1",
 		"react-router-dom": "^7.9.6",
 		"react-window": "^2.2.3",
@@ -54,6 +57,8 @@
 		"sonner": "^2.0.7",
 		"swr": "^2.3.6",
 		"tailwind-scrollbar": "^4.0.2",
+		"tailwindcss": "^4.1.16",
+		"to-json-schema": "^0.2.5",
 		"zod": "^4.1.11"
 	},
 	"devDependencies": {
@@ -69,6 +74,7 @@
 		"@types/react": "19.2.0",
 		"@types/react-dom": "19.2.0",
 		"@types/react-window": "^1",
+		"@types/to-json-schema": "^0.2.4",
 		"@vitejs/plugin-react": "^4.3.0",
 		"autoprefixer": "^10.4.19",
 		"dotenv": "^17.2.3",

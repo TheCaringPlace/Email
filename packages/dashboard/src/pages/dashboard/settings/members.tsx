@@ -1,12 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Membership, MembershipInvite, PublicProject } from "@sendra/shared";
 import { MembershipSchemas } from "@sendra/shared";
-import { motion } from "framer-motion";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import type z from "zod";
+import { BlackButton } from "../../../components/Buttons/BlackButton";
 import Card from "../../../components/Card/Card";
 import Dropdown from "../../../components/Input/Dropdown/Dropdown";
 import Input from "../../../components/Input/Input/Input";
@@ -120,8 +120,8 @@ export default function MembersPage() {
         isOpen={showLeaveModal}
         onToggle={() => setShowLeaveModal(!showLeaveModal)}
         onAction={leaveProject}
-        type={"danger"}
-        title={"Are you sure?"}
+        type="danger"
+        title="Are you sure?"
         description={
           memberships.members?.length === 1
             ? "You are the last person in this project, if you leave it we will automatically delete it!"
@@ -132,8 +132,8 @@ export default function MembersPage() {
         isOpen={showInviteModal}
         onToggle={() => setShowInviteModal(!showInviteModal)}
         onAction={handleSubmit(inviteAccount)}
-        type={"info"}
-        title={"Invite a new member"}
+        type="info"
+        title="Invite a new member"
         description="Enter the email of the account you want to invite to this project. The person you want to invite needs to have an account on Sendra."
       >
         <Input register={register("email")} error={errors.email} label={"Email"} placeholder={"hello@example.com"} />
@@ -157,11 +157,11 @@ export default function MembersPage() {
 
               Manage:
                 membership.user === user.id ? (
-                  <button className={"mb-2 text-sm text-neutral-400 underline transition ease-in-out hover:text-neutral-700"} onClick={() => setShowLeaveModal(true)}>
+                  <button className="mb-2 text-sm text-neutral-400 underline transition ease-in-out hover:text-neutral-700" onClick={() => setShowLeaveModal(true)}>
                     Leave
                   </button>
                 ) : memberships.members?.find((membership) => membership.user === user.id)?.role === "ADMIN" ? (
-                  <button className={"mb-2 text-sm text-neutral-400 underline transition ease-in-out hover:text-neutral-700"} onClick={() => kickAccount(membership.email)}>
+                  <button className="mb-2 text-sm text-neutral-400 underline transition ease-in-out hover:text-neutral-700" onClick={() => kickAccount(membership.email)}>
                     Kick
                   </button>
                 ) : (
@@ -176,14 +176,9 @@ export default function MembersPage() {
             <p className={"text-sm text-neutral-400"}>By adding someone to your project you give them access to all data present in your project including emails and your API key.</p>
           </div>
 
-          <motion.button
-            onClick={() => setShowInviteModal(true)}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.9 }}
-            className={"ml-auto mt-4 self-end rounded-sm bg-neutral-800 px-8 py-2.5 text-sm font-medium text-white"}
-          >
+          <BlackButton onClick={() => setShowInviteModal(true)} className="ml-auto mt-4 self-end">
             Invite user
-          </motion.button>
+          </BlackButton>
         </div>
       </Card>
     </>

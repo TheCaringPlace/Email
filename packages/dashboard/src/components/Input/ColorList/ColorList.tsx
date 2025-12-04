@@ -2,6 +2,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useState } from "react";
 import type { FieldError, Merge, UseFormSetValue, UseFormWatch } from "react-hook-form";
+import { StyledLabel } from "../../Label/StyledLabel";
+import { StyledInput } from "../Input/StyledInput";
 
 export interface ColorListProps {
   label?: string;
@@ -45,7 +47,7 @@ export default function ColorList(props: ColorListProps) {
 
   return (
     <div className={props.className}>
-      <label className="block text-sm font-medium text-neutral-700">
+      <StyledLabel>
         {props.label}
         <div className="mt-1 space-y-2">
           <div className="flex gap-2">
@@ -56,14 +58,7 @@ export default function ColorList(props: ColorListProps) {
               onKeyDown={handleKeyDown}
               className="h-10 w-20 cursor-pointer rounded-sm border border-neutral-300 transition ease-in-out focus:border-neutral-800 focus:ring-neutral-800"
             />
-            <input
-              type="text"
-              value={newColor}
-              onChange={(e) => setNewColor(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="#000000"
-              className="block flex-1 rounded-sm border-neutral-300 transition ease-in-out focus:border-neutral-800 focus:ring-neutral-800 sm:text-sm"
-            />
+            <StyledInput type="text" value={newColor} onChange={(e) => setNewColor(e.target.value)} onKeyDown={handleKeyDown} placeholder="#000000" className="block flex-1" />
             <button type="button" onClick={addColor} className="rounded-sm bg-neutral-800 px-4 py-2 text-sm font-medium text-white transition ease-in-out hover:bg-neutral-900">
               Add
             </button>
@@ -83,7 +78,7 @@ export default function ColorList(props: ColorListProps) {
             </div>
           )}
         </div>
-      </label>
+      </StyledLabel>
       <AnimatePresence>
         {props.error && (
           <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">

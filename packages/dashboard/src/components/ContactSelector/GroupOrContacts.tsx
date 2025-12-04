@@ -3,6 +3,7 @@ import { useAllContacts } from "../../lib/hooks/contacts";
 import { useAllGroups } from "../../lib/hooks/groups";
 import Dropdown from "../Input/Dropdown/Dropdown";
 import MultiselectDropdown from "../Input/MultiselectDropdown/MultiselectDropdown";
+import { StyledLabel } from "../Label/StyledLabel";
 import Skeleton from "../Skeleton/Skeleton";
 import ContactSelector from "./ContactSelector";
 
@@ -22,10 +23,8 @@ const GroupSelector = ({ onRecipientsChange, onGroupsChange, disabled, selectedG
     return <Skeleton type="input" />;
   }
   return (
-    <>
-      <label htmlFor="groups" className="block text-sm font-medium text-neutral-700">
-        Groups
-      </label>
+    <StyledLabel>
+      Groups
       <MultiselectDropdown
         values={groups.sort((a, b) => a.name.localeCompare(b.name)).map((g) => ({ name: g.name, value: g.id })) ?? []}
         disabled={disabled}
@@ -36,7 +35,7 @@ const GroupSelector = ({ onRecipientsChange, onGroupsChange, disabled, selectedG
           onGroupsChange(selectedGroups);
         }}
       />
-    </>
+    </StyledLabel>
   );
 };
 
@@ -63,21 +62,21 @@ export default function GroupOrContacts({ onRecipientsChange, onGroupsChange, di
 
   return (
     <div className="sm:col-span-6 flex flex-col gap-2">
-      <label htmlFor="recipients" className="block text-sm font-medium text-neutral-700">
+      <StyledLabel htmlFor="recipients">
         Select recipients by:
-      </label>
-      <Dropdown
-        values={[
-          { name: "Group", value: "group" },
-          { name: "Contacts", value: "contacts" },
-        ]}
-        selectedValue={selectedValue}
-        onChange={(v) => setSelectedValue(v)}
-      />
-      {selectedValue === "group" && <GroupSelector onRecipientsChange={handleRecipientsChange} onGroupsChange={onGroupsChange} disabled={disabled} label={label} selectedGroups={selectedGroups} />}
-      {selectedValue === "contacts" && (
-        <ContactSelectorWrapper onRecipientsChange={handleRecipientsChange} onGroupsChange={onGroupsChange} disabled={disabled} label={label} selectedContacts={selectedContacts} />
-      )}
+        <Dropdown
+          values={[
+            { name: "Group", value: "group" },
+            { name: "Contacts", value: "contacts" },
+          ]}
+          selectedValue={selectedValue}
+          onChange={(v) => setSelectedValue(v)}
+        />
+        {selectedValue === "group" && <GroupSelector onRecipientsChange={handleRecipientsChange} onGroupsChange={onGroupsChange} disabled={disabled} label={label} selectedGroups={selectedGroups} />}
+        {selectedValue === "contacts" && (
+          <ContactSelectorWrapper onRecipientsChange={handleRecipientsChange} onGroupsChange={onGroupsChange} disabled={disabled} label={label} selectedContacts={selectedContacts} />
+        )}
+      </StyledLabel>
       <div>Total recipients: {recipients?.length}</div>
     </div>
   );

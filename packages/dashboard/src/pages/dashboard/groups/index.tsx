@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { BlackButton } from "../../../components/Buttons/BlackButton";
 import Card from "../../../components/Card/Card";
 import { GroupForm } from "../../../components/GroupForm/Form";
+import { StyledInput } from "../../../components/Input/Input/StyledInput";
 import Modal from "../../../components/Overlay/Modal/Modal";
 import Skeleton from "../../../components/Skeleton/Skeleton";
 import Table from "../../../components/Table/Table";
@@ -48,14 +49,7 @@ export default function Index() {
         description="View and manage your contact groups"
         actions={
           <div className="grid w-full gap-3 md:w-fit md:grid-cols-2">
-            <input
-              onChange={(e) => setQuery(e.target.value)}
-              autoComplete="off"
-              type="search"
-              placeholder="Filter groups"
-              value={query}
-              className="rounded-sm border-neutral-300 transition ease-in-out focus:border-neutral-800 focus:ring-neutral-800 sm:text-sm"
-            />
+            <StyledInput onChange={(e) => setQuery(e.target.value)} autoComplete="off" type="search" placeholder="Filter groups" value={query} className="" />
             <BlackButton onClick={() => setGroupModal(true)}>
               <Plus strokeWidth={1.5} size={18} />
               New
@@ -72,7 +66,7 @@ export default function Index() {
               .map((g) => {
                 return {
                   Name: g.name,
-                  "Last Updated": dayjs().to(g.updatedAt).toString(),
+                  Created: dayjs().to(g.updatedAt).toString(),
                   Members: g.contacts.length,
                   Edit: (
                     <Link to={`/groups/${g.id}`} className="transition hover:text-neutral-800">

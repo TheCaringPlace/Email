@@ -63,7 +63,8 @@ Campaigns are one-time broadcasts to your audience.
 - Sends to every subscribed contact
 - Best for newsletters
 
-**Note:** Only subscribed contacts receive emails, regardless of targeting method.
+{: .note }
+Only subscribed contacts receive emails, regardless of targeting method.
 
 ### Campaign Analytics
 

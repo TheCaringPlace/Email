@@ -120,9 +120,7 @@ export default function Index() {
                   return {
                     Event: e.name,
                     "Triggered by users": (
-                      <Badge
-                        type={"info"}
-                      >{`${e._embed.events.length > 0 ? Math.round(([...new Map(e._embed.events.map((t) => [t.contact, t])).values()].length / contacts.length) * 100) : 0}%`}</Badge>
+                      <Badge type="info">{`${e._embed.events.length > 0 ? Math.round(([...new Map(e._embed.events.map((t) => [t.contact, t])).values()].length / contacts.length) * 100) : 0}%`}</Badge>
                     ),
                     "Total triggers": e._embed.events.length,
                     Timeline: (
@@ -234,9 +232,7 @@ export default function Index() {
                   return {
                     Event: e.name,
                     "Triggered by users": (
-                      <Badge
-                        type={"info"}
-                      >{`${e._embed.events.length > 0 ? Math.round(([...new Map(e._embed.events.map((t) => [t.contact, t])).values()].length / contacts.length) * 100) : 0}%`}</Badge>
+                      <Badge type="info">{`${e._embed.events.length > 0 ? Math.round(([...new Map(e._embed.events.map((t) => [t.contact, t])).values()].length / contacts.length) * 100) : 0}%`}</Badge>
                     ),
                     "Total times triggered": e._embed.events.length,
                     "Last Activity": lastActivity(e),

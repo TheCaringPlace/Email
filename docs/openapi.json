@@ -9545,7 +9545,8 @@
                             "type": "string"
                           },
                           "name": {
-                            "type": "string"
+                            "type": "string",
+                            "minLength": 1
                           },
                           "contacts": {
                             "type": "array",
@@ -9751,7 +9752,8 @@
                 "type": "object",
                 "properties": {
                   "name": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                   },
                   "contacts": {
                     "type": "array",
@@ -9789,7 +9791,8 @@
                       "type": "string"
                     },
                     "name": {
-                      "type": "string"
+                      "type": "string",
+                      "minLength": 1
                     },
                     "contacts": {
                       "type": "array",
@@ -10013,7 +10016,8 @@
                         "type": "string"
                       },
                       "name": {
-                        "type": "string"
+                        "type": "string",
+                        "minLength": 1
                       },
                       "contacts": {
                         "type": "array",
@@ -10236,7 +10240,8 @@
                       "type": "string"
                     },
                     "name": {
-                      "type": "string"
+                      "type": "string",
+                      "minLength": 1
                     },
                     "contacts": {
                       "type": "array",
@@ -10445,7 +10450,8 @@
                     "type": "string"
                   },
                   "name": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                   },
                   "contacts": {
                     "type": "array",
@@ -10484,7 +10490,8 @@
                       "type": "string"
                     },
                     "name": {
-                      "type": "string"
+                      "type": "string",
+                      "minLength": 1
                     },
                     "contacts": {
                       "type": "array",

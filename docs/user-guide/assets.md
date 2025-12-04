@@ -63,7 +63,8 @@ In addition, you can also reference external assets via their full URL.
 3. Click the delete icon or action
 4. Confirm deletion
 
-**Important:** Deleting an asset will break any templates that reference it. Make sure to update your templates before deleting assets that are in use.
+{: .warning}
+Deleting an asset will break any templates that reference it. Make sure to update your templates before deleting assets that are in use.
 
 ---
 

@@ -81,15 +81,6 @@ ul {
   margin-left: 24px;
   list-style: disc;
 }
-.ql-align-center {
-  text-align: center;
-}
-.ql-align-right {
-  text-align: right;
-}
-.ql-align-justify {
-  text-align: justify;
-}
 body {
   color: black;
   font-family: Verdana, Arial, sans-serif;

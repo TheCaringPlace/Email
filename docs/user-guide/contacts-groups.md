@@ -28,7 +28,8 @@ Navigate to **Contacts** to see:
    - **If no schema is defined**: Use the free-form metadata editor to add custom key-value pairs (name, company, preferences, etc.)
 5. Click **"Create Contact"**
 
-**Note:** If your project has a contact data schema defined (see [Project Settings - Contact Schema](../project-settings#contact-data-schema)), the contact form will automatically generate structured fields based on the schema. This ensures consistent data structure and provides validation.
+{: .note }
+If your project has a contact data schema defined (see [Project Settings - Contact Schema](../project-settings#contact-data-schema)), the contact form will automatically generate structured fields based on the schema. This ensures consistent data structure and provides validation.
 
 ## Groups
 
@@ -44,7 +45,8 @@ Groups organize contacts to make it easier to send campaigns to multiple contact
 4. Click **"Create Group"**
 
 
-**Note:** Contacts can belong to multiple groups.
+{: .note }
+Contacts can belong to multiple groups.
 
 ### Deleting Groups
 
@@ -53,4 +55,5 @@ Groups organize contacts to make it easier to send campaigns to multiple contact
 3. Click **"Delete"**
 4. Confirm deletion
 
-**Note:** Deleting a group does not delete contacts.
+{: .note }
+Deleting a group does not delete contacts.

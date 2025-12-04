@@ -1,7 +1,7 @@
-import { AnimatePresence, motion } from "framer-motion";
 import { Menu } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { useLocation } from "react-router-dom";
 import Sidebar from "../components/Navigation/Sidebar/Sidebar";
 import FullscreenLoader from "../components/Utility/FullscreenLoader/FullscreenLoader";
@@ -10,6 +10,30 @@ import { useProjects } from "../lib/hooks/projects";
 import { useLoginStatus } from "../lib/hooks/users";
 
 const WIDE_LAYOUT_ROUTES = [/\/campaigns\/.*\/edit/, /\/templates\/.*/];
+
+const ErrorFallback = ({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) => {
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="mx-auto w-full max-w-md text-center">
+        <div>
+          <h2 className="mt-6 text-3xl font-extrabold text-neutral-800">Unexpected Error</h2>
+          <p className="text-sm text-neutral-500">The following unexpected error occurred:</p>
+          <p className="text-sm text-neutral-500">{error.message}</p>
+          <summary>
+            Stack Trace
+            <details>
+              <pre className="text-left">{error.stack}</pre>
+            </details>
+          </summary>
+          <br />
+          <button className="text-sm text-neutral-500 underline transition ease-in-out hover:text-neutral-600" onClick={resetErrorBoundary}>
+            Reload
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const Dashboard = (props: { children: React.ReactNode }) => {
   const { data: projects } = useProjects();
@@ -43,18 +67,9 @@ export const Dashboard = (props: { children: React.ReactNode }) => {
         <main className="relative z-0 flex-1 overflow-y-scroll focus:outline-hidden">
           <div className="min-h-screen">
             <div className="relative mx-auto min-h-screen">
-              <AnimatePresence>
-                <motion.div
-                  key={location.pathname}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2, ease: "easeInOut" }}
-                  className={`h-full ${wideLayout ? "mx-auto max-w-full" : "mx-auto max-w-7xl space-y-6 px-4 py-5 sm:px-6 md:px-8"}`}
-                >
-                  {props.children}
-                </motion.div>
-              </AnimatePresence>
+              <div className="flex flex-col p-2 gap-2">
+                <ErrorBoundary fallbackRender={ErrorFallback}>{props.children}</ErrorBoundary>
+              </div>
             </div>
           </div>
         </main>

@@ -33,14 +33,14 @@ In addition, the latest API spec is located here: [./api-spec.html](./api-spec.h
 
 The API is accessed as sub-resources to a project in plural form, for example:
 
-`GET /projects/:projectId/contacts` - will return a list of contacts
+`GET /api/v1/projects/:projectId/contacts` - will return a list of contacts
 
 ### Embedding
 
 Resources can be embedded in other resources by requesting the parent resource with `?embed={{embedtype}}`, for example:
 
 ```
-GET /project/:projectId/contacts/:contactId?embed=events
+GET /api/v1//project/:projectId/contacts/:contactId?embed=events
 {
   id: "contact_123",
   email: "user@example.com", 
@@ -99,7 +99,7 @@ The returned object has the following keys:
 `items`: array - the array of items
 
 ```
-GET /project/:projectId/contacts?limit=2&cursor=<somecursor>
+GET /api/v1//project/:projectId/contacts?limit=2&cursor=<somecursor>
 {
   count: 2,
   cursor: <next-cursor>,
@@ -135,7 +135,7 @@ If you want to get all of the items, you can add the `/all` suffix to a list cal
 
 
 ```
-GET /project/:projectId/contacts/all
+GET /api/v1//project/:projectId/contacts/all
 [
   {
     id: "contact_123",
@@ -211,7 +211,7 @@ For programmatic access, use your project's API keys. The project API keys can b
 
 ```bash
 # Using secret key for full access
-curl -X POST https://your-api-url.amazonaws.com/{{project.id}}/track \
+curl -X POST https://your-host.com//api/v1/{{project.id}}/track \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer s:_your-secret-key" \
   -d '{

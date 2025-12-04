@@ -1,12 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { ProjectCreate, PublicProject } from "@sendra/shared";
 import { ProjectSchemas } from "@sendra/shared";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useAtom } from "jotai";
 import { LoaderCircle, Rocket } from "lucide-react";
 import { useState } from "react";
 import { useForm, useFormState } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
+import { StyledInput } from "../components/Input/Input/StyledInput";
+import { ErrorMessage } from "../components/Label/ErrorMessage";
+import { LightLabel } from "../components/Label/LightLabel";
 import FullscreenLoader from "../components/Utility/FullscreenLoader/FullscreenLoader";
 import Redirect from "../components/Utility/Redirect/Redirect";
 import SendraLogo from "../icons/SendraLogo";
@@ -87,54 +90,27 @@ export default function NewProject() {
             <div className="mt-6">
               <form onSubmit={handleSubmit(create)} className="relative mt-2 w-full">
                 <div className="mt-4 flex flex-col">
-                  <label htmlFor="name" className="text-xs font-light">
+                  <LightLabel>
                     Project name
-                  </label>
-                  <input
-                    autoComplete={"off"}
-                    type="text"
-                    className={"block w-full rounded-sm border-neutral-300 transition ease-in-out focus:border-neutral-800 focus:ring-neutral-800 sm:text-sm"}
-                    placeholder="My project"
-                    {...register("name")}
-                  />
-                  <AnimatePresence>
-                    {errors.name?.message && (
-                      <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">
-                        {errors.name.message}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
+                    <StyledInput autoComplete="off" type="text" placeholder="My project" {...register("name")} />
+                  </LightLabel>
+                  <ErrorMessage error={errors.name} />
                 </div>
 
                 <div className="mt-4 flex flex-col">
-                  <label htmlFor="url" className="text-xs font-light">
+                  <LightLabel>
                     Project URL
-                  </label>
-                  <div className="mt-1 flex rounded-md">
-                    <input
-                      type="url"
-                      className={"block w-full rounded-r border-neutral-300 transition ease-in-out focus:border-neutral-800 focus:ring-neutral-800 sm:text-sm"}
-                      placeholder="https://www.example.com"
-                      {...register("url")}
-                    />
-                  </div>
-
-                  <AnimatePresence>
-                    {errors.url?.message && (
-                      <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">
-                        {errors.url.message}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
+                    <div className="mt-1 flex rounded-md">
+                      <input
+                        type="url"
+                        className="block w-full rounded-r border-neutral-300 transition ease-in-out focus:border-neutral-800 focus:ring-neutral-800 sm:text-sm"
+                        placeholder="https://www.example.com"
+                        {...register("url")}
+                      />
+                    </div>
+                  </LightLabel>
+                  <ErrorMessage error={errors.url} />
                 </div>
-
-                <AnimatePresence>
-                  {errors.name?.message && (
-                    <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">
-                      {errors.name.message}
-                    </motion.p>
-                  )}
-                </AnimatePresence>
                 <motion.button
                   whileHover={isValid ? { scale: 1.05 } : {}}
                   whileTap={isValid ? { scale: 0.9 } : {}}

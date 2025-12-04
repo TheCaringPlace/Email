@@ -6,6 +6,7 @@ import { BlackButton } from "../../../components/Buttons/BlackButton";
 import Card from "../../../components/Card/Card";
 import { ContactForm } from "../../../components/ContactForm/ContactForm";
 import Dropdown from "../../../components/Input/Dropdown/Dropdown";
+import { StyledInput } from "../../../components/Input/Input/StyledInput";
 import Modal from "../../../components/Overlay/Modal/Modal";
 import Skeleton from "../../../components/Skeleton/Skeleton";
 import Table from "../../../components/Table/Table";
@@ -74,7 +75,7 @@ export default function Index() {
                 .map((u) => {
                   return {
                     Email: u.email,
-                    "Last Updated": dayjs().to(u.updatedAt).toString(),
+                    Created: dayjs().to(u.updatedAt).toString(),
                     Subscribed: u.subscribed,
                     Edit: (
                       <Link to={`/contacts/${u.id}`} className="transition hover:text-neutral-800" aria-label="Edit contact">
@@ -101,30 +102,21 @@ export default function Index() {
           </>
         );
       }
-      return <Empty title={"No contacts"} description={"New contacts will automatically be added when they trigger an event"} />;
+      return <Empty title="No contacts" description="New contacts will automatically be added when they trigger an event" />;
     }
   };
 
   return (
     <>
-      <Modal isOpen={contactModal} onToggle={() => setContactModal((s) => !s)} onAction={() => {}} type={"info"} title={"Create new contact"} hideActionButtons={true}>
+      <Modal isOpen={contactModal} onToggle={() => setContactModal((s) => !s)} onAction={() => {}} type="info" title={"Create new contact"} hideActionButtons={true}>
         <ContactForm projectId={project.id} showEmailField={true} submitButtonText="Create" onSuccess={handleContactSuccess} />
       </Modal>
-
       <Card
         title="Contacts"
         description="View and manage your contacts"
         actions={
           <div className="grid w-full gap-3 md:w-fit md:grid-cols-3">
-            <input
-              onChange={(e) => setQuery(e.target.value)}
-              autoComplete="off"
-              type="search"
-              placeholder="Filter contacts"
-              className="rounded-sm border-neutral-300 transition ease-in-out focus:border-neutral-800 focus:ring-neutral-800 sm:text-sm"
-              aria-label="Filter contacts by email"
-            />
-
+            <StyledInput className="" onChange={(e) => setQuery(e.target.value)} autoComplete="off" type="search" placeholder="Filter contacts" aria-label="Filter contacts by email" />
             <Dropdown
               ariaLabel="Filter contacts by status"
               onChange={(v) => setStatusFilter(v)}

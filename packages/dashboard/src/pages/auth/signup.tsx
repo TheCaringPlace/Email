@@ -2,10 +2,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { UserCredentials, UserGet } from "@sendra/shared";
 import { UserSchemas } from "@sendra/shared";
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircle, Eye, EyeOff, LoaderCircle } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useSearchParams } from "react-router-dom";
+import { LoadingButton } from "../../components/Buttons/LoadingButton";
+import { PasswordInput } from "../../components/Input/Input/PasswordInput";
+import { StyledInput } from "../../components/Input/Input/StyledInput";
+import { StyledLabel } from "../../components/Label/StyledLabel";
 import FullscreenLoader from "../../components/Utility/FullscreenLoader/FullscreenLoader";
 import Redirect from "../../components/Utility/Redirect/Redirect";
 import SendraLogo from "../../icons/SendraLogo";
@@ -19,7 +23,6 @@ export default function Index() {
   const { data: user, error } = useFetchUser();
 
   const [state, setState] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [hidePassword, setHidePassword] = useState(true);
   const [searchParams] = useSearchParams();
 
   const {
@@ -83,18 +86,12 @@ export default function Index() {
             <div className="rounded-sm border border-neutral-200 bg-white px-4 py-8 sm:px-10">
               <form onSubmit={handleSubmit(signup)} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700">
+                  <StyledLabel>
                     Your Email
                     <div className="mt-1">
-                      <input
-                        type={"email"}
-                        className={"block w-full rounded-sm border-neutral-300 transition ease-in-out focus:border-neutral-800 focus:ring-neutral-800 sm:text-sm"}
-                        autoComplete={"email"}
-                        placeholder={"hello@email.com"}
-                        {...register("email")}
-                      />
+                      <StyledInput type="email" autoComplete="email" placeholder="hello@email.com" {...register("email")} />
                     </div>
-                  </label>
+                  </StyledLabel>
                   <AnimatePresence>
                     {errors.email?.message && (
                       <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">
@@ -105,39 +102,11 @@ export default function Index() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-neutral-600">
-                    A Strong Password
-                    <div className="relative mt-1">
-                      <input
-                        type={hidePassword ? "password" : "text"}
-                        placeholder={hidePassword ? "•••••••••••••" : "Password"}
-                        autoComplete={"new-password"}
-                        className={"block w-full rounded-sm border-neutral-300 transition ease-in-out focus:border-neutral-800 focus:ring-neutral-800 sm:text-sm"}
-                        {...register("password")}
-                      />
-                      <div className="absolute inset-y-0 right-0 flex cursor-pointer items-center pr-3">
-                        {hidePassword ? <Eye onClick={() => setHidePassword(!hidePassword)} /> : <EyeOff onClick={() => setHidePassword(!hidePassword)} />}
-                      </div>
-                    </div>
-                  </label>
-                  <AnimatePresence>
-                    {errors.password?.message && (
-                      <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">
-                        Password must be at least 6 characters long
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
+                  <PasswordInput label="A Strong Password" error={errors.password} {...register("password")} />
                 </div>
 
                 <div>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.9 }}
-                    type="submit"
-                    className={"flex w-full items-center justify-center rounded-md bg-neutral-800 py-2.5 text-sm font-medium text-white"}
-                  >
-                    {state === "loading" ? <LoaderCircle className="animate-spin" size={18} /> : "Create account"}
-                  </motion.button>
+                  <LoadingButton label="Create account" state={state} />
                   <AnimatePresence>
                     {errors.email?.message && (
                       <motion.p initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="mt-1 text-xs text-red-500">

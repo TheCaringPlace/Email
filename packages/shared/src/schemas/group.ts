@@ -2,7 +2,7 @@ import z from "zod";
 import { id, ProjectEntitySchema } from "./common";
 
 export const GroupSchema = ProjectEntitySchema.extend({
-  name: z.string(),
+  name: z.string().min(1, "Name can't be empty"),
   contacts: z.array(id),
 });
 

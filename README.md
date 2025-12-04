@@ -13,7 +13,7 @@
 
 Sendra is an open-source email platform built on top of AWS and [sst](https://sst.dev/) It allows you to easily send emails from applications or via campaigns.
 
-It can be considered as a self-hosted alternative to services
+It can be considered as an open source, cloud-hosted alternative to services
 like [SendGrid](https://sendgrid.com/), [Resend](https://resend.com) or [Mailgun](https://www.mailgun.com/).
 
 Sendra is a fork of [Plunk](https://useplunk.com/) with a focus on a lighter footprint and costs. It uses AWS Lambda and DynamoDB to ensure ensure you're only paying for what you use.
@@ -49,4 +49,4 @@ A complete guide on how to deploy Sendra can be found in the [deployment documen
 
 ## Contributing
 
-You are welcome to contribute to Sendra. You can find a guide on how to contribute in [CONTRIBUTING.html](CONTRIBUTING.html).
+You are welcome to contribute to Sendra. You can find a guide on how to contribute in [CONTRIBUTING.md](CONTRIBUTING.md).

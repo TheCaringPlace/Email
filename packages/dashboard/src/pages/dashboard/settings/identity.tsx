@@ -1,6 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IdentitySchemas, type ProjectIdentity } from "@sendra/shared";
-import { motion } from "framer-motion";
 import { Copy, Plus, Unlink } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
@@ -8,9 +7,12 @@ import { toast } from "sonner";
 import type z from "zod";
 import Alert from "../../../components/Alert/Alert";
 import Badge from "../../../components/Badge/Badge";
+import { BlackButton } from "../../../components/Buttons/BlackButton";
+import { DangerButton } from "../../../components/Buttons/DangerButton";
 import Card from "../../../components/Card/Card";
 import Dropdown from "../../../components/Input/Dropdown/Dropdown";
 import Input from "../../../components/Input/Input/Input";
+import { StyledLabel } from "../../../components/Label/StyledLabel";
 import SettingTabs from "../../../components/Navigation/SettingTabs/SettingTabs";
 import Table from "../../../components/Table/Table";
 import FullscreenLoader from "../../../components/Utility/FullscreenLoader/FullscreenLoader";
@@ -139,16 +141,16 @@ export default function Index() {
         description="By sending emails from your own domain you build up domain authority and trust."
         actions={
           project.email && (
-            <button onClick={unlink} className={"flex items-center gap-x-2 rounded-sm bg-red-600 px-8 py-2 text-center text-sm font-medium text-white transition ease-in-out hover:bg-red-700"}>
+            <DangerButton onClick={unlink}>
               <Unlink strokeWidth={1.5} size={18} />
               Unlink domain
-            </button>
+            </DangerButton>
           )
         }
       >
         {identity.identityType === "domain" && !identity.verified && (
           <>
-            <Alert type={"warning"} title={"Waiting for DNS verification"}>
+            <Alert type="warning" title="Waiting for DNS verification">
               Please add the following records to {domain} to verify {identity.identity}, this may take up to 15 minutes to register. <br />
               In the meantime you can already start sending emails, we will automatically switch to your domain once it is verified.
             </Alert>
@@ -157,10 +159,10 @@ export default function Index() {
               <Table
                 values={[
                   {
-                    Type: <Badge type={"info"}>TXT</Badge>,
+                    Type: <Badge type="info">TXT</Badge>,
                     Key: (
                       <button
-                        className={"flex cursor-pointer items-center gap-3"}
+                        className="flex cursor-pointer items-center gap-3"
                         onClick={() => {
                           void navigator.clipboard.writeText("sendra");
                           toast.success("Copied key to clipboard");
@@ -172,7 +174,7 @@ export default function Index() {
                     ),
                     Value: (
                       <button
-                        className={"flex cursor-pointer items-center gap-3"}
+                        className="flex cursor-pointer items-center gap-3"
                         onClick={() => {
                           void navigator.clipboard.writeText("v=spf1 include:amazonses.com ~all");
                           toast.success("Copied value to clipboard");
@@ -183,22 +185,22 @@ export default function Index() {
                     ),
                   },
                   {
-                    type: <Badge type={"info"}>MX</Badge>,
+                    type: <Badge type="info">MX</Badge>,
                     Key: (
                       <button
-                        className={"flex cursor-pointer items-center gap-3"}
+                        className="flex cursor-pointer items-center gap-3"
                         onClick={() => {
                           void navigator.clipboard.writeText("sendra");
                           toast.success("Copied key to clipboard");
                         }}
                       >
-                        <p className={"font-mono text-sm"}>sendra</p>
+                        <p className="font-mono text-sm">sendra</p>
                         <Copy size={14} />
                       </button>
                     ),
                     Value: (
                       <button
-                        className={"flex cursor-pointer items-center gap-3"}
+                        className="flex cursor-pointer items-center gap-3"
                         onClick={() => {
                           void navigator.clipboard.writeText(`10 feedback-smtp.${AWS_REGION}.amazonses.com`);
                           toast.success("Copied value to clipboard");
@@ -211,10 +213,10 @@ export default function Index() {
                   },
                   ...(projectIdentity?.dkimTokens ?? []).map((token) => {
                     return {
-                      Type: <Badge type={"info"}>CNAME</Badge>,
+                      Type: <Badge type="info">CNAME</Badge>,
                       Key: (
                         <button
-                          className={"flex cursor-pointer items-center gap-3"}
+                          className="flex cursor-pointer items-center gap-3"
                           onClick={() => {
                             void navigator.clipboard.writeText(`${token}._domainkey${subdomain ? `.${subdomain}` : ""}`);
                             toast.success("Copied key to clipboard");
@@ -228,13 +230,13 @@ export default function Index() {
                       ),
                       Value: (
                         <button
-                          className={"flex cursor-pointer items-center gap-3"}
+                          className="flex cursor-pointer items-center gap-3"
                           onClick={() => {
                             void navigator.clipboard.writeText(`${token}.dkim.amazonses.com`);
                             toast.success("Copied value to clipboard");
                           }}
                         >
-                          <p className={"font-mono text-sm"}>{token}.dkim.amazonses.com</p>
+                          <p className="font-mono text-sm">{token}.dkim.amazonses.com</p>
                           <Copy size={14} />
                         </button>
                       ),
@@ -246,33 +248,30 @@ export default function Index() {
           </>
         )}
         {identity.verified && (
-          <Alert type={"success"} title={"Identity verified"}>
+          <Alert type="success" title="Identity verified">
             You have confirmed {identity.identity} as your identity. You can now start sending emails.
           </Alert>
         )}
         {!identity.verified && (
           <form onSubmit={handleSubmitVerify(verify)} className="space-y-6">
-            <label htmlFor="identityType" className="block text-sm font-medium text-neutral-700">
+            <StyledLabel>
               Identity Type
-            </label>
-            <Dropdown
-              selectedValue={watchVerify("identityType") ?? ""}
-              values={[
-                { name: "Email", value: "email" },
-                { name: "Domain", value: "domain" },
-              ]}
-              onChange={(t) => setValueVerify("identityType", t as "email" | "domain")}
-            />
+              <Dropdown
+                className="mt-1"
+                selectedValue={watchVerify("identityType") ?? ""}
+                values={[
+                  { name: "Email", value: "email" },
+                  { name: "Domain", value: "domain" },
+                ]}
+                onChange={(t) => setValueVerify("identityType", t as "email" | "domain")}
+              />
+            </StyledLabel>
             <Input register={registerVerify("identity")} error={errorsVerify.identity} placeholder={"hello@example.com or example.com"} label="Identity" />
             <Input register={registerVerify("mailFromDomain")} error={errorsVerify.mailFromDomain} placeholder={"hello@example.com"} label="Mail From Domain" />
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.9 }}
-              className={"ml-auto flex items-center gap-x-0.5 rounded-sm bg-neutral-800 px-8 py-2 text-center text-sm font-medium text-white"}
-            >
+            <BlackButton type="submit" className="ml-auto">
               <Plus size={18} />
               Verify identity
-            </motion.button>
+            </BlackButton>
           </form>
         )}
       </Card>
@@ -282,13 +281,9 @@ export default function Index() {
           <Input register={registerUpdate("from")} placeholder={project.name} label={"Name"} error={errorsUpdate.from} />
           <Input register={registerUpdate("email")} placeholder={project.email ?? (identity.identityType === "email" ? identity.identity : undefined)} label={"Email"} error={errorsUpdate.email} />
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.9 }}
-            className={"ml-auto flex items-center gap-x-0.5 rounded-sm bg-neutral-800 px-8 py-2 text-center text-sm font-medium text-white"}
-          >
+          <BlackButton type="submit" className="ml-auto">
             Save
-          </motion.button>
+          </BlackButton>
         </form>
       </Card>
     </>
