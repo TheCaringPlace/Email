@@ -15,10 +15,11 @@ emailTopic.subscribe("EmailTopicSubscriber", {
   environment: {
     EMAIL_CONFIGURATION_SET_NAME: `SendraConfigurationSet-${$app.stage}`,
     ...passEnvironmentVariables([
+      "APP_URL",
+      "DEFAULT_EMAIL",
       "LOG_LEVEL",
       "LOG_PRETTY",
-      "DEFAULT_EMAIL",
-      "APP_URL",
+      "METRICS_ENABLED",
     ]),
   },
 });
