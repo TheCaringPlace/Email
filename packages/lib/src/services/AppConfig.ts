@@ -88,7 +88,7 @@ export const getPersistenceConfig = () => {
   }
   return {
     client: new DynamoDBClient(),
-    tableName: Resource.RateLimit.name,
+    tableName: Resource.SendraDatabase.name,
   };
 };
 
